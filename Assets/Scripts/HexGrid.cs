@@ -35,7 +35,7 @@ public class HexGrid : MonoBehaviour
     [SerializeField]
     private HexTile hexTilePrefab;
 
-    private Dictionary<Vector3Int, HexTile> tiles = new Dictionary<Vector3Int, HexTile>(); //Soon to be HexCube instead of Vector3Int
+    private Dictionary<HexCoord, HexTile> tiles = new Dictionary<HexCoord, HexTile>(); //Soon to be HexCube instead of Vector3Int
 
 
 
@@ -61,6 +61,17 @@ public class HexGrid : MonoBehaviour
     private void Start()
     {
         CreateTiles();
+
+        //foreach(HexCoord coord in ((HexCoord)(0, 0)).CellsInRange(1))
+        //{
+        //    Debug.Log(coord);
+        //}
+
+        Debug.Log(tiles[(0, 0)].GridCoordinates);
+
+        HexCoord hexTest = new HexCoord(0,0);
+        Debug.Log( (0,0) == hexTest);//true
+        Debug.Log( hexTest == (HexCoord)((int, int))hexTest);//true grâce à la surcharge d'opérateur==
     }
 
     private void CreateTiles()
@@ -75,10 +86,11 @@ public class HexGrid : MonoBehaviour
                     float horizontalPos = i * spacingHorizontal + r * rOffset.x;
                     float verticalPos = r * rOffset.y;
 
-                    Vector3 newTilePos = new Vector3(horizontalPos, 0f, verticalPos);
+                    Vector3 newTilePos = new (horizontalPos, 0f, verticalPos);
                     HexTile newTile = Instantiate(hexTilePrefab, newTilePos, Quaternion.identity, transform);
-                    tiles.Add(new Vector3Int(i, j, r), newTile);
-                }                
+                    newTile.GridCoordinates = new HexCoord(i, j);
+                    tiles.Add(newTile.GridCoordinates, newTile);
+                }
             }
         }
     }
