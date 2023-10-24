@@ -45,8 +45,7 @@ public class PlayerInputs : MonoBehaviour
         {
             movements.ReceiveMoveInput(moveInput, true);
         }
-
-        if (moveInput == MoveInputs.None)
+        else
         {
             if (Input.GetKey(forward)) moveInput = MoveInputs.Forward;
             if (Input.GetKey(back)) moveInput = MoveInputs.Back;
@@ -54,9 +53,9 @@ public class PlayerInputs : MonoBehaviour
             if (Input.GetKey(right)) moveInput = MoveInputs.Right;
             if (Input.GetKey(turnLeft)) moveInput = MoveInputs.TurnLeft;
             if (Input.GetKey(turnRight)) moveInput = MoveInputs.TurnRight;
-        }
-        movements.ReceiveMoveInput(moveInput);
 
+            movements.ReceiveMoveInput(moveInput);
+        }
 
         moveInput = MoveInputs.None;
     }
