@@ -67,11 +67,14 @@ public class HexGrid : MonoBehaviour
         //    Debug.Log(coord);
         //}
 
-        Debug.Log(tiles[(0, 0)].GridCoordinates);
+        //Debug.Log(tiles[(0, 0)].GridCoordinates);
 
-        HexCoord hexTest = new HexCoord(0,0);
-        Debug.Log( (0,0) == hexTest);//true
-        Debug.Log( hexTest == (HexCoord)((int, int))hexTest);//true grâce à la surcharge d'opérateur==
+        //HexCoord hexTest = new HexCoord(0,0);
+        //Debug.Log( (0,0) == hexTest);//true
+        //Debug.Log( hexTest == (HexCoord)((int, int))hexTest);//true grâce à la surcharge d'opérateur==
+
+        //tiles[(0, 1)].GridCoordinates += (0, 1);  //Throws an exception
+
     }
 
     private void CreateTiles()
@@ -95,6 +98,9 @@ public class HexGrid : MonoBehaviour
         }
     }
 
-
+    public HexTile GetTile(HexCoord hexCoord)
+    {
+        return tiles[hexCoord];
+    }
 
 }
