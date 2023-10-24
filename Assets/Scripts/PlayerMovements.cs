@@ -6,9 +6,13 @@ using UnityEngine;
 public class PlayerMovements : MonoBehaviour
 {
     public HexCoord pos = HexCoord.zero;
-    public HexCoord.Orientation pointyOrientation = 0;//always acts like an edgeDirection with a ballastRight = left;
-    public bool ballastRight = true;
-    public HexCoord.Orientation edgeDirectionForward { get { return ballastRight ? (pointyOrientation - 1) : pointyOrientation; } }
+    public HexCoord.Orientation orientation = 0;//always acts like an edgeDirection with a ballastRight = left;
+    public bool ballastLeft = false;
+
+    public HexCoord.Orientation edgeDirectionForward => ballastLeft ? orientation : orientation - 1;
+    public HexCoord.Orientation edgeDirectionBackward => ballastLeft ? orientation + 2 : orientation - 3;
+    public HexCoord.Orientation edgeDirectionLeft => orientation + 1;
+    public HexCoord.Orientation edgeDirectionRight => orientation - 2;
 
     [SerializeField]
     private float transitionSpeed = 10f;
@@ -16,54 +20,97 @@ public class PlayerMovements : MonoBehaviour
     private float transitionRotationSpeed = 500f;
 
     public HexCoord targetGridPos;
-    public HexCoord prevTargetGridPos;
     public Vector3 targetMovePos;
+
+    public HexCoord.Orientation targetOrientation;
     public Quaternion targetRotation;
 
     private Quaternion leftRotation = Quaternion.Euler(0f, -60f, 0f);
     private Quaternion rightRotation = Quaternion.Euler(0f, 60f, 0f);
 
-    public Quaternion ballastRotation { get { return ballastRight ? rightRotation : leftRotation; } }
+    public Quaternion ballastRotation { get { return ballastLeft ? leftRotation : rightRotation; } }
 
+    [SerializeField]
     private PlayerInputs.MoveInputs moveInput = PlayerInputs.MoveInputs.None;
     private PlayerInputs.MoveInputs nextMoveInput = PlayerInputs.MoveInputs.None;
     
 
     public bool isMoving { get; private set; } = false;
-    public bool isTurning { get; private set; } = false;
+    public bool isRotating { get; private set; } = false;
     [SerializeField]
     public float moveCooldown = 0.1f;
     public bool isOnMoveCooldown { get; private set; } = false;
 
-    private bool canMove
+
+
+    private void Start()
     {
-        get
+        //Debug.Log("edgeDirectionForward = " + edgeDirectionForward);
+        //Debug.Log("edgeDirectionBackward = " + edgeDirectionBackward);
+        //Debug.Log(pos + " + " + HexCoord.EdgeDirections[edgeDirectionForward] + " is " + (pos + HexCoord.EdgeDirections[5]));
+
+        Debug.Log("current rotation = " + transform.rotation.eulerAngles);
+        Debug.Log("leftRotation =" + leftRotation.eulerAngles);
+        Debug.Log("angle between current and left rotations : " + Quaternion.Angle(transform.rotation, leftRotation));
+        Debug.Log("current rotation * leftRotation = " + (transform.rotation * leftRotation).eulerAngles);
+    }
+
+    private void FixedUpdate()
+    {
+        MovePlayer();
+    }
+
+    private bool CanMove()
+    {
+        if (!isMoving && !isRotating && !isOnMoveCooldown)
         {
-            if (!isMoving && !isTurning)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
-    private void TargetMovePos()
+    public void ReceiveMoveInput(PlayerInputs.MoveInputs input)
     {
-
+        moveInput = input;
     }
-
-
-
 
     private void MovePlayer()
     {
-        if(canMove)
+        if(CanMove() && moveInput != PlayerInputs.MoveInputs.None)
         {
-            StartCoroutine(MoveCoroutine(targetMovePos));
+            DeduceMoveFromInput();
+            
+            if(targetGridPos != pos)
+            {
+                targetMovePos = HexGrid.Instance.GetWorldPos(targetGridPos);
+                StartCoroutine(MoveCoroutine(targetMovePos));
+            }
+
+            if(targetOrientation != orientation)
+            {
+                StartCoroutine(RotateCoroutine(targetRotation));
+            }
         }
+    }
+
+    private IEnumerator RotateCoroutine(Quaternion targetRotation)
+    {
+        Debug.Log("Rotating to " + targetRotation.eulerAngles);
+        isRotating = true;
+        float safetyTimer = 0f;
+        while (Mathf.Abs(Quaternion.Angle(transform.rotation, targetRotation)) > 0.05f && safetyTimer < 10f)
+        {
+            yield return new WaitForFixedUpdate();
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, safetyTimer);
+            safetyTimer += Time.deltaTime;
+        }
+        orientation = targetOrientation;
+        Debug.Log("Done rotating");
+        isRotating = false;
+
     }
 
     private IEnumerator MoveCoroutine(Vector3 targetPosition)
@@ -76,9 +123,11 @@ public class PlayerMovements : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * transitionSpeed);
             safetyTimer += Time.deltaTime;
         }
+        Debug.Log("Done moving");
         isMoving = false;
-
-        //nextMoveInput
+        pos = targetGridPos;
+        moveInput = nextMoveInput;
+        nextMoveInput = PlayerInputs.MoveInputs.None;
 
         isOnMoveCooldown = true;
         yield return new WaitForSeconds(moveCooldown);
@@ -87,52 +136,39 @@ public class PlayerMovements : MonoBehaviour
 
     }
 
-
-    private HexTile TargetTile(PlayerInputs.MoveInputs moveTo)
+    private void DeduceMoveFromInput()
     {
-        HexCoord.Orientation moveToDirection;
-
-        switch (moveTo)
+        switch (moveInput)
         {
             case PlayerInputs.MoveInputs.Forward:
-                moveToDirection = edgeDirectionForward;
+                targetGridPos = HexCoord.GetNeighbour(pos, edgeDirectionForward);
                 break;
 
             case PlayerInputs.MoveInputs.Back:
-                moveToDirection = ballastRight ? pointyOrientation - 2 : pointyOrientation + 2;
+                targetGridPos = HexCoord.GetNeighbour(pos, edgeDirectionBackward);
                 break;
 
             case PlayerInputs.MoveInputs.Left:
-                moveToDirection = pointyOrientation + 1;
+                targetGridPos = HexCoord.GetNeighbour(pos, edgeDirectionLeft);
                 break;
 
             case PlayerInputs.MoveInputs.Right:
-                moveToDirection = pointyOrientation - 2;
+                targetGridPos = HexCoord.GetNeighbour(pos, edgeDirectionRight);
                 break;
 
             case PlayerInputs.MoveInputs.TurnLeft:
+                targetOrientation = orientation + 1;
+                targetRotation = transform.rotation * leftRotation;
+                break;
             case PlayerInputs.MoveInputs.TurnRight:
+                targetOrientation = orientation - 1;
+                targetRotation = transform.rotation * rightRotation;//I'd like those two to be strongly tied.
+                break;
+
             default:
-                return HexGrid.Instance.GetTile(pos); //Player isn't moving.
+
+                return;
         }
-
-        return HexGrid.Instance.GetTile(HexCoord.GetNeighbour(pos, moveToDirection));
     }
-
-
-
-    /// <summary>
-    /// Set the transform.rotation to grid orientation
-    /// </summary>
-    public void AdjustRotationToOrientation()
-    {
-        Quaternion orientationRotation = Quaternion.identity;
-        for (int i = 0; i < pointyOrientation; ++i)
-        {
-            orientationRotation *= leftRotation;
-        }
-        transform.rotation = orientationRotation;
-    }
-
 
 }

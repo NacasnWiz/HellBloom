@@ -19,11 +19,10 @@ public struct HexCoord
         public int Direction
         {
             get => _direction;
-            set => _direction = value % 6;
+            set => _direction = (6+value) % 6;
         }
 
-
-        public Orientation (int i) { _direction = i % 6; }
+        public Orientation (int i) { _direction = (6+i) % 6; }
 
         public static implicit operator Orientation(int i) => new Orientation(i);
         public static implicit operator int(Orientation o) => o.Direction;
@@ -33,12 +32,11 @@ public struct HexCoord
         {
             return Direction.ToString();
         }
-
     }//Some features might be missing.
 
 
     public static HexCoord[] VertexDirections = { (1, 1), (-1, 2), (-2, 1), (-1, -1), (1, -2), (2, -1) };//Peu utile
-    public static HexCoord[] EdgeDirections = { (0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1), (0, -1) };
+    public static HexCoord[] EdgeDirections = { (0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1), (1, 0) };
 
     public HexCoord(int q = 0, int s = 0)
     {
@@ -94,6 +92,7 @@ public struct HexCoord
 
     public static HexCoord GetNeighbour(HexCoord center, Orientation side)
     {
+        Debug.Log(center + " neighbour facing direction " + side + " is " + (center + EdgeDirections[side]));
         return center + EdgeDirections[side];
     }
 
@@ -119,7 +118,7 @@ public struct HexCoord
         {
             for (int j = Mathf.Max(-searchRange, -i); j <= Mathf.Max(searchRange, -i + searchRange); ++j)
             {
-                cellsInRangeList.Add(this + new HexCoord(i, j));
+                cellsInRangeList.Add(this + new HexCoord(j, i));
             }
         }
 

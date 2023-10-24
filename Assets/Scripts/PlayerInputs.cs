@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerController))]
+[RequireComponent(typeof(PlayerMovements))]
 public class PlayerInputs : MonoBehaviour
 {
     public enum MoveInputs
@@ -28,11 +28,11 @@ public class PlayerInputs : MonoBehaviour
 
 
     [SerializeField]
-    private PlayerController controller;
+    private PlayerMovements movements;
 
     private void Reset()
     {
-        controller = gameObject.GetComponent<PlayerController>();
+        movements = gameObject.GetComponent<PlayerMovements>();
     }
 
     private void Update()
@@ -52,7 +52,7 @@ public class PlayerInputs : MonoBehaviour
         if (Input.GetKeyDown(turnLeft)) moveInput = MoveInputs.TurnLeft;   //controller.RotateLeft();
         if (Input.GetKeyDown(turnRight)) moveInput = MoveInputs.TurnRight; //controller.RotateRight();
 
-        controller.TargetNextMove(moveInput);
+        movements.ReceiveMoveInput(moveInput);
         moveInput = MoveInputs.None;
     }
 

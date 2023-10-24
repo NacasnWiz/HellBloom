@@ -22,6 +22,9 @@ public class HexTile : MonoBehaviour
         }
     }
 
-
+    private void OnMouseDown()
+    {
+        Debug.Log(_gridCoordinates);
+    }
 
 }

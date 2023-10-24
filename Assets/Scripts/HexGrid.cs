@@ -91,7 +91,7 @@ public class HexGrid : MonoBehaviour
 
                     Vector3 newTilePos = new (horizontalPos, 0f, verticalPos);
                     HexTile newTile = Instantiate(hexTilePrefab, newTilePos, Quaternion.identity, transform);
-                    newTile.GridCoordinates = new HexCoord(i, j);
+                    newTile.GridCoordinates = new HexCoord(-j, -i);
                     tiles.Add(newTile.GridCoordinates, newTile);
                 }
             }
@@ -101,6 +101,11 @@ public class HexGrid : MonoBehaviour
     public HexTile GetTile(HexCoord hexCoord)
     {
         return tiles[hexCoord];
+    }
+
+    public Vector3 GetWorldPos(HexCoord gridTileCoord)
+    {
+        return GetTile(gridTileCoord).transform.position;
     }
 
 }
