@@ -32,6 +32,19 @@ public struct HexCoord
         {
             return Direction.ToString();
         }
+
+        public Quaternion GetUnderlyingRotation()
+        {
+            Quaternion _underlyingRotation = Quaternion.identity;
+            Quaternion leftRotation = Quaternion.Euler(0f, -60f, 0f);
+
+            for (int i = 0; i < Direction; ++i)
+            {
+                _underlyingRotation *= leftRotation;
+            }
+            return _underlyingRotation;
+        }
+
     }//Some features might be missing.
 
 

@@ -5,6 +5,9 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerMovements))]
 public class PlayerInputs : MonoBehaviour
 {
+    [SerializeField]
+    private PlayerMovements movements;
+
     public enum MoveInputs
     {
         None = 0,
@@ -25,11 +28,6 @@ public class PlayerInputs : MonoBehaviour
     public KeyCode turnLeft = KeyCode.Q;
     public KeyCode turnRight = KeyCode.E;
 
-
-
-    [SerializeField]
-    private PlayerMovements movements;
-
     private void Reset()
     {
         movements = gameObject.GetComponent<PlayerMovements>();
@@ -37,13 +35,15 @@ public class PlayerInputs : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKey(forward)) moveInput = MoveInputs.Forward;
-        if (Input.GetKey(back)) moveInput = MoveInputs.Back;
-        if (Input.GetKey(left)) moveInput = MoveInputs.Left;
-        if (Input.GetKey(right)) moveInput = MoveInputs.Right;
-        if (Input.GetKey(turnLeft)) moveInput = MoveInputs.TurnLeft;
-        if (Input.GetKey(turnRight)) moveInput = MoveInputs.TurnRight;
-
+        if (moveInput == MoveInputs.None)
+        {
+            if (Input.GetKey(forward)) moveInput = MoveInputs.Forward;
+            if (Input.GetKey(back)) moveInput = MoveInputs.Back;
+            if (Input.GetKey(left)) moveInput = MoveInputs.Left;
+            if (Input.GetKey(right)) moveInput = MoveInputs.Right;
+            if (Input.GetKey(turnLeft)) moveInput = MoveInputs.TurnLeft;
+            if (Input.GetKey(turnRight)) moveInput = MoveInputs.TurnRight;
+        }
 
         if (Input.GetKeyDown(forward)) moveInput = MoveInputs.Forward;     //controller.MoveForward();
         if (Input.GetKeyDown(back)) moveInput = MoveInputs.Back;           //controller.MoveBackWard();

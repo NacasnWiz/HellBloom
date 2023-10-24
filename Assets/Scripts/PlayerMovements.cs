@@ -49,10 +49,10 @@ public class PlayerMovements : MonoBehaviour
         //Debug.Log("edgeDirectionBackward = " + edgeDirectionBackward);
         //Debug.Log(pos + " + " + HexCoord.EdgeDirections[edgeDirectionForward] + " is " + (pos + HexCoord.EdgeDirections[5]));
 
-        Debug.Log("current rotation = " + transform.rotation.eulerAngles);
-        Debug.Log("leftRotation =" + leftRotation.eulerAngles);
-        Debug.Log("angle between current and left rotations : " + Quaternion.Angle(transform.rotation, leftRotation));
-        Debug.Log("current rotation * leftRotation = " + (transform.rotation * leftRotation).eulerAngles);
+        //Debug.Log("current rotation = " + transform.rotation.eulerAngles);
+        //Debug.Log("leftRotation =" + leftRotation.eulerAngles);
+        //Debug.Log("angle between current and left rotations : " + Quaternion.Angle(transform.rotation, leftRotation));
+        //Debug.Log("current rotation * leftRotation = " + (transform.rotation * leftRotation).eulerAngles);
     }
 
     private void FixedUpdate()
@@ -91,6 +91,7 @@ public class PlayerMovements : MonoBehaviour
 
             if(targetOrientation != orientation)
             {
+                targetRotation = targetOrientation.GetUnderlyingRotation();
                 StartCoroutine(RotateCoroutine(targetRotation));
             }
         }
@@ -98,17 +99,17 @@ public class PlayerMovements : MonoBehaviour
 
     private IEnumerator RotateCoroutine(Quaternion targetRotation)
     {
-        Debug.Log("Rotating to " + targetRotation.eulerAngles);
+        //Debug.Log("Rotating to " + targetRotation.eulerAngles);
         isRotating = true;
         float safetyTimer = 0f;
         while (Mathf.Abs(Quaternion.Angle(transform.rotation, targetRotation)) > 0.05f && safetyTimer < 10f)
         {
             yield return new WaitForFixedUpdate();
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, safetyTimer);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, transitionRotationSpeed * Time.deltaTime);
             safetyTimer += Time.deltaTime;
         }
         orientation = targetOrientation;
-        Debug.Log("Done rotating");
+        //Debug.Log("Done rotating");
         isRotating = false;
 
     }
@@ -117,13 +118,25 @@ public class PlayerMovements : MonoBehaviour
     {
         isMoving = true;
         float safetyTimer = 0f;
-        while(Vector3.Distance(transform.position, targetPosition) > 0.05f && safetyTimer < 10f)
+
+        //float lerpTimer = 0f;
+
+        //while (lerpTimer <= 1f)
+        //{
+        //    transform.position = Vector3.MoveTowards(transform.position, Vector3.Lerp(transform.position, targetPosition, lerpTimer), Time.deltaTime * transitionSpeed);
+        //    lerpTimer += Time.fixedDeltaTime;
+        //    yield return null;
+        //}
+
+        while (Vector3.Distance(transform.position, targetPosition) > 0.01f && safetyTimer < 10f)
         {
             yield return new WaitForFixedUpdate();
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * transitionSpeed);
             safetyTimer += Time.deltaTime;
         }
-        Debug.Log("Done moving");
+        transform.position = targetPosition;
+
+        //Debug.Log("Done moving");
         isMoving = false;
         pos = targetGridPos;
         moveInput = nextMoveInput;
@@ -158,11 +171,9 @@ public class PlayerMovements : MonoBehaviour
 
             case PlayerInputs.MoveInputs.TurnLeft:
                 targetOrientation = orientation + 1;
-                targetRotation = transform.rotation * leftRotation;
                 break;
             case PlayerInputs.MoveInputs.TurnRight:
                 targetOrientation = orientation - 1;
-                targetRotation = transform.rotation * rightRotation;//I'd like those two to be strongly tied.
                 break;
 
             default:
