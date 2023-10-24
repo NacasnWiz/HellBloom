@@ -170,10 +170,11 @@ MonoBehaviour:
   ballastLeft: 0
   transitionSpeed: 8.5
   transitionRotationSpeed: 350
-  targetMovePos: {x: 0, y: 0, z: 0}
-  targetRotation: {x: 0, y: 0, z: 0, w: 0}
   moveInput: 0
-  moveCooldown: 0.05
+  nextMoveInput: 0
+  doubleInputReceiveMode: 1
+  <moveCooldown>k__BackingField: 0.05
+  <rotateCooldown>k__BackingField: 0.1
 --- !u!114 &110755246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -705,7 +706,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <hexSize>k__BackingField: 1.5
-  <gridSize>k__BackingField: 10
+  <gridSize>k__BackingField: 5
   hexTilePrefab: {fileID: 530249913270707157, guid: 4695a5881d4020a4584582ec0e31139a, type: 3}
 --- !u!1 &1450257535
 GameObject:

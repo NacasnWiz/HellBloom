@@ -20,8 +20,8 @@ public class PlayerInputs : MonoBehaviour
     }
 
     public MoveInputs moveInput;
-    
-    public KeyCode forward = KeyCode.W;
+
+    public KeyCode forward = KeyCode.W; 
     public KeyCode back = KeyCode.S;
     public KeyCode left = KeyCode.A;
     public KeyCode right = KeyCode.D;
@@ -35,6 +35,17 @@ public class PlayerInputs : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(forward)) moveInput = MoveInputs.Forward;     //controller.MoveForward();
+        if (Input.GetKeyDown(back)) moveInput = MoveInputs.Back;           //controller.MoveBackWard();
+        if (Input.GetKeyDown(left)) moveInput = MoveInputs.Left;           //controller.MoveLeft();
+        if (Input.GetKeyDown(right)) moveInput = MoveInputs.Right;         //controller.MoveRight();
+        if (Input.GetKeyDown(turnLeft)) moveInput = MoveInputs.TurnLeft;   //controller.RotateLeft();
+        if (Input.GetKeyDown(turnRight)) moveInput = MoveInputs.TurnRight; //controller.RotateRight();
+        if (moveInput != MoveInputs.None)
+        {
+            movements.ReceiveMoveInput(moveInput, true);
+        }
+
         if (moveInput == MoveInputs.None)
         {
             if (Input.GetKey(forward)) moveInput = MoveInputs.Forward;
@@ -44,15 +55,9 @@ public class PlayerInputs : MonoBehaviour
             if (Input.GetKey(turnLeft)) moveInput = MoveInputs.TurnLeft;
             if (Input.GetKey(turnRight)) moveInput = MoveInputs.TurnRight;
         }
-
-        if (Input.GetKeyDown(forward)) moveInput = MoveInputs.Forward;     //controller.MoveForward();
-        if (Input.GetKeyDown(back)) moveInput = MoveInputs.Back;           //controller.MoveBackWard();
-        if (Input.GetKeyDown(left)) moveInput = MoveInputs.Left;           //controller.MoveLeft();
-        if (Input.GetKeyDown(right)) moveInput = MoveInputs.Right;         //controller.MoveRight();
-        if (Input.GetKeyDown(turnLeft)) moveInput = MoveInputs.TurnLeft;   //controller.RotateLeft();
-        if (Input.GetKeyDown(turnRight)) moveInput = MoveInputs.TurnRight; //controller.RotateRight();
-
         movements.ReceiveMoveInput(moveInput);
+
+
         moveInput = MoveInputs.None;
     }
 

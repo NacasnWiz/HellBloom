@@ -19,26 +19,26 @@ public class PlayerMovements : MonoBehaviour
     [SerializeField]
     private float transitionRotationSpeed = 500f;
 
-    public HexCoord targetGridPos;
-    public Vector3 targetMovePos;
+    private HexCoord targetGridPos;
+    private Vector3 targetMovePos;
 
-    public HexCoord.Orientation targetOrientation;
-    public Quaternion targetRotation;
-
-    private Quaternion leftRotation = Quaternion.Euler(0f, -60f, 0f);
-    private Quaternion rightRotation = Quaternion.Euler(0f, 60f, 0f);
-
-    public Quaternion ballastRotation { get { return ballastLeft ? leftRotation : rightRotation; } }
+    private HexCoord.Orientation targetOrientation;
+    private Quaternion targetRotation;
 
     [SerializeField]
     private PlayerInputs.MoveInputs moveInput = PlayerInputs.MoveInputs.None;
+    [SerializeField]
     private PlayerInputs.MoveInputs nextMoveInput = PlayerInputs.MoveInputs.None;
-    
+
+    [SerializeField]
+    private bool doubleInputReceiveMode = false;
 
     public bool isMoving { get; private set; } = false;
     public bool isRotating { get; private set; } = false;
-    [SerializeField]
-    public float moveCooldown = 0.1f;
+    [field: SerializeField]
+    public float moveCooldown { get; private set; } = 0.05f;
+    [field: SerializeField]
+    public float rotateCooldown { get; private set; } = 0.1f;
     public bool isOnMoveCooldown { get; private set; } = false;
 
 
@@ -72,9 +72,25 @@ public class PlayerMovements : MonoBehaviour
         }
     }
 
-    public void ReceiveMoveInput(PlayerInputs.MoveInputs input)
+    public void ReceiveMoveInput(PlayerInputs.MoveInputs input, bool highPriority = false)
     {
-        moveInput = input;
+        if (doubleInputReceiveMode)
+        {
+            if (isMoving && highPriority)
+            {
+                nextMoveInput = input;
+            }
+
+            if (moveInput == PlayerInputs.MoveInputs.None && input != PlayerInputs.MoveInputs.None)
+            {
+                moveInput = input;
+            }
+        }
+        else
+        {
+            moveInput = input;
+        }
+        
     }
 
     private void MovePlayer()
@@ -99,7 +115,6 @@ public class PlayerMovements : MonoBehaviour
 
     private IEnumerator RotateCoroutine(Quaternion targetRotation)
     {
-        //Debug.Log("Rotating to " + targetRotation.eulerAngles);
         isRotating = true;
         float safetyTimer = 0f;
         while (Mathf.Abs(Quaternion.Angle(transform.rotation, targetRotation)) > 0.05f && safetyTimer < 10f)
@@ -108,9 +123,16 @@ public class PlayerMovements : MonoBehaviour
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, transitionRotationSpeed * Time.deltaTime);
             safetyTimer += Time.deltaTime;
         }
+        transform.rotation = targetRotation;
         orientation = targetOrientation;
-        //Debug.Log("Done rotating");
         isRotating = false;
+
+        moveInput = nextMoveInput;
+        nextMoveInput = PlayerInputs.MoveInputs.None;
+
+        isOnMoveCooldown = true;
+        yield return new WaitForSeconds(rotateCooldown);
+        isOnMoveCooldown = false;
 
     }
 
@@ -119,15 +141,6 @@ public class PlayerMovements : MonoBehaviour
         isMoving = true;
         float safetyTimer = 0f;
 
-        //float lerpTimer = 0f;
-
-        //while (lerpTimer <= 1f)
-        //{
-        //    transform.position = Vector3.MoveTowards(transform.position, Vector3.Lerp(transform.position, targetPosition, lerpTimer), Time.deltaTime * transitionSpeed);
-        //    lerpTimer += Time.fixedDeltaTime;
-        //    yield return null;
-        //}
-
         while (Vector3.Distance(transform.position, targetPosition) > 0.01f && safetyTimer < 10f)
         {
             yield return new WaitForFixedUpdate();
@@ -135,19 +148,18 @@ public class PlayerMovements : MonoBehaviour
             safetyTimer += Time.deltaTime;
         }
         transform.position = targetPosition;
-
-        //Debug.Log("Done moving");
         isMoving = false;
         pos = targetGridPos;
+
         moveInput = nextMoveInput;
         nextMoveInput = PlayerInputs.MoveInputs.None;
 
         isOnMoveCooldown = true;
         yield return new WaitForSeconds(moveCooldown);
         isOnMoveCooldown = false;
-
-
     }
+
+
 
     private void DeduceMoveFromInput()
     {
