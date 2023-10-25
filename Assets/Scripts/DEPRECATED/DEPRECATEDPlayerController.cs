@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static PlayerInputs;
 
-public class PlayerController : MonoBehaviour
+public class DEPRECATEDPlayerController : MonoBehaviour
 {
     [SerializeField]
     private bool ballastRight = true;
@@ -22,7 +21,7 @@ public class PlayerController : MonoBehaviour
 
     public Quaternion ballastRotation { get { return ballastRight ? rightRotation : leftRotation; } }
 
-    private MoveInputs nextMoveInputs;
+    private PlayerInputs.ActionInputs nextMoveInputs;
 
 
     //public bool isAtRest = true;
@@ -50,34 +49,34 @@ public class PlayerController : MonoBehaviour
     public void MoveRight() { targetGridPos += HexGrid.Instance.hexSize * 2f * transform.right; }
     //it's only a target
 
-    public void TargetNextMove(MoveInputs input)
+    public void TargetNextMove(PlayerInputs.ActionInputs input)
     {
         if (isAtRest)
         {
             switch (input)
             {
-                case MoveInputs.Forward:
+                case PlayerInputs.ActionInputs.Forward:
                     MoveForward();
                     break;
-                case MoveInputs.Back:
+                case PlayerInputs.ActionInputs.Back:
                     MoveBackward();
                     break;
-                case MoveInputs.Left:
+                case PlayerInputs.ActionInputs.Left:
                     MoveLeft();
                     break;
-                case MoveInputs.Right:
+                case PlayerInputs.ActionInputs.Right:
                     MoveRight();
                     break;
-                case MoveInputs.TurnLeft:
+                case PlayerInputs.ActionInputs.TurnLeft:
                     RotateLeft();
                     break;
-                case MoveInputs.TurnRight:
+                case PlayerInputs.ActionInputs.TurnRight:
                     RotateRight();
                     break;
 
                 default: break;
             }
-            nextMoveInputs = MoveInputs.None;
+            nextMoveInputs = PlayerInputs.ActionInputs.None;
         }
         else
         {

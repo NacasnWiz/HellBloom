@@ -108,4 +108,9 @@ public class HexGrid : MonoBehaviour
         return GetTile(gridTileCoord).transform.position;
     }
 
+    public bool isValidCoordinates(HexCoord coord)
+    {
+        return tiles.ContainsKey(coord);
+    }
+
 }

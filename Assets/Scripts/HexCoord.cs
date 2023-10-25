@@ -105,7 +105,7 @@ public struct HexCoord
 
     public static HexCoord GetNeighbour(HexCoord center, Orientation side)
     {
-        Debug.Log(center + " neighbour facing direction " + side + " is " + (center + EdgeDirections[side]));
+        //Debug.Log(center + " neighbour facing direction " + side + " is " + (center + EdgeDirections[side]));
         return center + EdgeDirections[side];
     }
 
