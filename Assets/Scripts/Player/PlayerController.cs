@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovements))]
+[RequireComponent (typeof(PlayerInputs))]
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] PlayerMovements movements;
+    [SerializeField] PlayerInputs inputs;
 
     public enum Actions
     {
@@ -14,9 +16,13 @@ public class PlayerController : MonoBehaviour
         Swing = 3,
     }
 
+    [SerializeField] DemonicArm demonicArm;
+
+
 
     public HexCoord playerPos { get; private set; } = HexCoord.zero;
     public HexCoord.Orientation playerOrientation { get; private set; } = 0;//always acts like an edgeDirection with a ballastRight = left;
+    [field: SerializeField]
     public bool ballastLeft { get; private set; } = false;
 
     public HexCoord.Orientation edgeDirectionForward => ballastLeft ? playerOrientation : playerOrientation - 1;
@@ -33,19 +39,22 @@ public class PlayerController : MonoBehaviour
     private bool doubleInputReceiveMode = true;
 
     private HexCoord targetGridPos;
-    private Vector3 targetMovePos;
+    //private Vector3 targetMovePos;
 
     private HexCoord.Orientation targetOrientation;
-    private Quaternion targetRotation;
+    //private Quaternion targetRotation;
 
     [field: SerializeField]
     public float moveEndCooldown { get; private set; } = 0.05f;
     [field: SerializeField]
     public float rotateEndCooldown { get; private set; } = 0.1f;
     [field: SerializeField]
-    public float swingEndCooldown { get; private set; } = 0.3f;
+    public float swingEndCooldown { get; private set; } = 0.15f;
+    [field: SerializeField]
+    public float swingCooldown { get; private set; } = 2f;
 
     public bool isOnActionCooldown { get; private set; } = false;
+    public bool isOnSwingCooldown { get; private set; } = false;
 
 
     private void Start()
@@ -53,12 +62,18 @@ public class PlayerController : MonoBehaviour
         //movements.doneMoving.AddListener((coords) => Debug.Log(coords));
         movements.doneMoving.AddListener(() => OnEndAction(Actions.Move));
         movements.doneRotating.AddListener(() => OnEndAction(Actions.Rotate));
+        inputs.wantSwing.AddListener(() => TakeASwing());
+        demonicArm.doneSwinging.AddListener(() => OnEndAction(Actions.Swing));
+
+        Application.targetFrameRate = 60;
 
     }
 
     private void Reset()
     {
         movements = gameObject.GetComponent<PlayerMovements>();
+        inputs = gameObject.GetComponent<PlayerInputs>();
+        demonicArm = gameObject.GetComponent<DemonicArm>();
     }
 
     private void FixedUpdate()
@@ -70,12 +85,6 @@ public class PlayerController : MonoBehaviour
     {
         if (CanAct() && currentActionInput != PlayerInputs.ActionInputs.None)
         {
-
-            if (currentActionInput == PlayerInputs.ActionInputs.Swing)
-            {
-                //Swing();
-            }
-
             DeduceMovementFromInput();
 
             if (targetGridPos != playerPos)
@@ -87,21 +96,38 @@ public class PlayerController : MonoBehaviour
                     currentActionInput = PlayerInputs.ActionInputs.None;
                     return;
                 }
-                targetMovePos = HexGrid.Instance.GetWorldPos(targetGridPos);
+                Vector3 targetMovePos = HexGrid.Instance.GetWorldPos(targetGridPos);
                 movements.Move(targetMovePos);
             }
 
             if (targetOrientation != playerOrientation)
             {
-                targetRotation = targetOrientation.GetUnderlyingRotation();
+                Quaternion targetRotation = targetOrientation.GetUnderlyingRotation();
                 movements.Rotate(targetRotation);
             }
         }
     }
 
+    private void TakeASwing()
+    {
+        if (!CanSwing())
+        {
+            Debug.Log("You can't swing, it's on cooldown");
+            currentActionInput = PlayerInputs.ActionInputs.None;
+            return;
+        }
+        demonicArm.Swing();
+        StartCoroutine(SwingCooldownCoroutine());
+    }
+
+    private bool CanSwing()
+    {
+        return !isOnSwingCooldown;
+    }
+
     private bool CanAct()
     {
-        if (!movements.isMoving && !movements.isRotating && !isOnActionCooldown)
+        if (!movements.isMoving && !movements.isRotating && !isOnActionCooldown && !demonicArm.isSwinging)
         {
             return true;
         }
@@ -144,14 +170,15 @@ public class PlayerController : MonoBehaviour
         switch(actionEnded)
         {
             case Actions.Move:
-                actionEndCooldown = moveEndCooldown;
                 playerPos = targetGridPos;
+                actionEndCooldown = moveEndCooldown;
                 break;
             case Actions.Rotate:
-                actionEndCooldown = rotateEndCooldown;
                 playerOrientation = targetOrientation;
+                actionEndCooldown = rotateEndCooldown;
                 break;
             case Actions.Swing:
+                ballastLeft = !ballastLeft;
                 actionEndCooldown = swingEndCooldown;
                 break;
 
@@ -159,11 +186,11 @@ public class PlayerController : MonoBehaviour
                 break;
         }
 
-        StartCoroutine(EndAction(actionEndCooldown));
+        StartCoroutine(EndActionCoroutine(actionEndCooldown));
 
     }
 
-    private IEnumerator EndAction(float endActionCooldown)
+    private IEnumerator EndActionCoroutine(float endActionCooldown)
     {
         currentActionInput = nextActionInput;
         nextActionInput = PlayerInputs.ActionInputs.None;
@@ -171,6 +198,15 @@ public class PlayerController : MonoBehaviour
         isOnActionCooldown = true;
         yield return new WaitForSeconds(endActionCooldown);
         isOnActionCooldown = false;
+    }
+
+    private IEnumerator SwingCooldownCoroutine()
+    {
+        isOnSwingCooldown = true;
+        demonicArm.ChangeAppearance(!isOnSwingCooldown);
+        yield return new WaitForSeconds(swingCooldown + swingEndCooldown);
+        isOnSwingCooldown = false;
+        demonicArm.ChangeAppearance(!isOnSwingCooldown);
     }
 
     private void DeduceMovementFromInput()

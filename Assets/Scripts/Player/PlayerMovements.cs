@@ -42,7 +42,8 @@ public class PlayerMovements : MonoBehaviour
     //[field: SerializeField]
     //public float rotateCooldown { get; private set; } = 0.1f;
 
-
+    [SerializeField]
+    private bool test_weirdAlliasedMovementMode = false;
 
     public readonly UnityEvent doneMoving = new UnityEvent();
     public readonly UnityEvent doneRotating = new UnityEvent();
@@ -147,7 +148,11 @@ public class PlayerMovements : MonoBehaviour
         float safetyTimer = 0f;
         while (Mathf.Abs(Quaternion.Angle(transform.rotation, targetRotation)) > 0.05f && safetyTimer < 10f)
         {
-            yield return null; //new WaitForFixedUpdate();
+            if (test_weirdAlliasedMovementMode)
+                yield return new WaitForFixedUpdate();
+            else
+                yield return null; //new WaitForFixedUpdate();
+
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, transitionRotationSpeed * Time.deltaTime);
             safetyTimer += Time.deltaTime;
         }
@@ -166,7 +171,11 @@ public class PlayerMovements : MonoBehaviour
 
         while (Vector3.Distance(transform.position, targetPosition) > 0.01f && safetyTimer < 10f)
         {
-            yield return null; //new WaitForFixedUpdate();
+            if (test_weirdAlliasedMovementMode)
+                yield return new WaitForFixedUpdate();
+            else
+                yield return null; //new WaitForFixedUpdate();
+
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * transitionSpeed);
             safetyTimer += Time.deltaTime;
         }

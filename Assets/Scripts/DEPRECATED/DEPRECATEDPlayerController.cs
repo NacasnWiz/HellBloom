@@ -110,7 +110,7 @@ public class DEPRECATEDPlayerController : MonoBehaviour
         }
         else
         {
-            targetGridPos = prevTargetGridPos;
+            //targetGridPos = prevTargetGridPos;
         }
     }
 
