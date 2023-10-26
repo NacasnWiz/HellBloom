@@ -26,7 +26,9 @@ public class PlayerController : MonoBehaviour
     public bool ballastLeft { get; private set; } = false;
 
     public HexCoord.Orientation edgeDirectionForward => ballastLeft ? playerOrientation : playerOrientation - 1;
+    public HexCoord.Orientation edgeDirectionAntiForward => !ballastLeft ? playerOrientation : playerOrientation - 1;
     public HexCoord.Orientation edgeDirectionBackward => ballastLeft ? playerOrientation + 2 : playerOrientation - 3;
+    public HexCoord.Orientation edgeDirectionAntiBackward => !ballastLeft ? playerOrientation + 2 : playerOrientation - 3;
     public HexCoord.Orientation edgeDirectionLeft => playerOrientation + 1;
     public HexCoord.Orientation edgeDirectionRight => playerOrientation - 2;
 
@@ -39,10 +41,8 @@ public class PlayerController : MonoBehaviour
     private bool doubleInputReceiveMode = true;
 
     private HexCoord targetGridPos;
-    //private Vector3 targetMovePos;
 
     private HexCoord.Orientation targetOrientation;
-    //private Quaternion targetRotation;
 
     [field: SerializeField]
     public float moveEndCooldown { get; private set; } = 0.05f;
@@ -60,13 +60,14 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         //movements.doneMoving.AddListener((coords) => Debug.Log(coords));
+
         movements.doneMoving.AddListener(() => OnEndAction(Actions.Move));
         movements.doneRotating.AddListener(() => OnEndAction(Actions.Rotate));
         inputs.wantSwing.AddListener(() => TakeASwing());
         demonicArm.doneSwinging.AddListener(() => OnEndAction(Actions.Swing));
 
-        Application.targetFrameRate = 60;
 
+        Application.targetFrameRate = 60;
     }
 
     private void Reset()
@@ -78,33 +79,38 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        PlayerAct();
+        if(currentActionInput != PlayerInputs.ActionInputs.None)
+        {
+            TargetMovement(currentActionInput);
+
+            PlayerAct();
+        }
     }
 
     private void PlayerAct()
     {
-        if (CanAct() && currentActionInput != PlayerInputs.ActionInputs.None)
+        if (!CanAct())
         {
-            DeduceMovementFromInput();
+            return;
+        }
 
-            if (targetGridPos != playerPos)
+        if (targetGridPos != playerPos)
+        {
+            if (!(HexGrid.Instance.isValidCoordinates(targetGridPos)))
             {
-                if (!(HexGrid.Instance.isValidCoordinates(targetGridPos)))
-                {
-                    Debug.Log("You can't move there.");
-                    targetGridPos = playerPos;
-                    currentActionInput = PlayerInputs.ActionInputs.None;
-                    return;
-                }
-                Vector3 targetMovePos = HexGrid.Instance.GetWorldPos(targetGridPos);
-                movements.Move(targetMovePos);
+                Debug.Log("You can't move there.");
+                targetGridPos = playerPos;
+                currentActionInput = PlayerInputs.ActionInputs.None;
+                return;
             }
+            Vector3 targetMovePos = HexGrid.Instance.GetWorldPos(targetGridPos);
+            movements.Move(targetMovePos);
+        }
 
-            if (targetOrientation != playerOrientation)
-            {
-                Quaternion targetRotation = targetOrientation.GetUnderlyingRotation();
-                movements.Rotate(targetRotation);
-            }
+        if (targetOrientation != playerOrientation)
+        {
+            Quaternion targetRotation = targetOrientation.GetUnderlyingRotation();
+            movements.Rotate(targetRotation);
         }
     }
 
@@ -162,8 +168,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
-
     private void OnEndAction(Actions actionEnded)
     {
         float actionEndCooldown = 0f;
@@ -187,7 +191,6 @@ public class PlayerController : MonoBehaviour
         }
 
         StartCoroutine(EndActionCoroutine(actionEndCooldown));
-
     }
 
     private IEnumerator EndActionCoroutine(float endActionCooldown)
@@ -209,16 +212,16 @@ public class PlayerController : MonoBehaviour
         demonicArm.ChangeAppearance(!isOnSwingCooldown);
     }
 
-    private void DeduceMovementFromInput()
+    private void TargetMovement(PlayerInputs.ActionInputs instruction, bool invertedBallast = false)
     {
-        switch (currentActionInput)
+        switch (instruction)
         {
             case PlayerInputs.ActionInputs.Forward:
-                targetGridPos = HexCoord.GetNeighbour(playerPos, edgeDirectionForward);
+                targetGridPos = invertedBallast ? HexCoord.GetNeighbour(playerPos, edgeDirectionAntiForward) : HexCoord.GetNeighbour(playerPos, edgeDirectionForward);
                 break;
 
             case PlayerInputs.ActionInputs.Back:
-                targetGridPos = HexCoord.GetNeighbour(playerPos, edgeDirectionBackward);
+                targetGridPos = invertedBallast ? HexCoord.GetNeighbour(playerPos, edgeDirectionAntiBackward) : HexCoord.GetNeighbour(playerPos, edgeDirectionBackward);
                 break;
 
             case PlayerInputs.ActionInputs.Left:

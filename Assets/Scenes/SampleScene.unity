@@ -216,7 +216,7 @@ MonoBehaviour:
   <moveEndCooldown>k__BackingField: 0.05
   <rotateEndCooldown>k__BackingField: 0.1
   <swingEndCooldown>k__BackingField: 0.15
-  <swingCooldown>k__BackingField: 2
+  <swingCooldown>k__BackingField: 3
 --- !u!1 &454200831
 GameObject:
   m_ObjectHideFlags: 0
