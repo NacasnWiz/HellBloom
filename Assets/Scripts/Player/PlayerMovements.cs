@@ -5,8 +5,11 @@ using UnityEngine.Events;
 
 public class PlayerMovements : MonoBehaviour
 {
-    [SerializeField]
-    private float transitionSpeed = 10f;
+    [field: SerializeField]
+    public float baseTransitionSpeed { get; private set; } = 10f;
+    [field: SerializeField]
+    public float currentTransitionSpeed { get; private set; }
+
     [SerializeField]
     private float transitionRotationSpeed = 500f;
 
@@ -19,9 +22,9 @@ public class PlayerMovements : MonoBehaviour
     public readonly UnityEvent doneMoving = new UnityEvent();
     public readonly UnityEvent doneRotating = new UnityEvent();
 
-    public void Move(Vector3 targetPosition)
+    public void Move(Vector3 targetPosition, float customSpeed = -1)
     {
-        StartCoroutine(MoveCoroutine(targetPosition));
+        StartCoroutine(MoveCoroutine(targetPosition, customSpeed));
     }
 
     public void Rotate(Quaternion targetRotation)
@@ -49,8 +52,10 @@ public class PlayerMovements : MonoBehaviour
         doneRotating.Invoke();
     }
 
-    private IEnumerator MoveCoroutine(Vector3 targetPosition)
+    private IEnumerator MoveCoroutine(Vector3 targetPosition, float customSpeed = -1f)
     {
+        currentTransitionSpeed = customSpeed > 0 ? customSpeed : baseTransitionSpeed;
+
         isMoving = true;
         float safetyTimer = 0f;
 
@@ -61,11 +66,13 @@ public class PlayerMovements : MonoBehaviour
             else
                 yield return null; //new WaitForFixedUpdate();
 
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * transitionSpeed);
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * currentTransitionSpeed);
             safetyTimer += Time.deltaTime;
         }
         transform.position = targetPosition;
         isMoving = false;
+
+        currentTransitionSpeed = baseTransitionSpeed;
 
         doneMoving.Invoke();
     }

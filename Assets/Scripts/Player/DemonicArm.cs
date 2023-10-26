@@ -20,8 +20,8 @@ public class DemonicArm : MonoBehaviour
     [SerializeField] private Vector3 rightAnchor = new(-1f, 0.35f, 0f);
 
     public bool isSwinging { get; private set; }
-    [SerializeField]
-    private float swingSpeed = 10f;
+    [field: SerializeField]
+    public float swingSpeed { get; private set; } = 10f;
 
 
     public readonly UnityEvent doneSwinging = new UnityEvent();

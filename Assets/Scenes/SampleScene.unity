@@ -170,7 +170,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e41ac9d984ba6d64ab0dcc2c80cd4692, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  transitionSpeed: 8.5
+  <baseTransitionSpeed>k__BackingField: 8.5
+  <currentTransitionSpeed>k__BackingField: 0
   transitionRotationSpeed: 350
   test_weirdAlliasedMovementMode: 0
 --- !u!114 &110755246
@@ -212,7 +213,8 @@ MonoBehaviour:
   <ballastLeft>k__BackingField: 0
   currentActionInput: 0
   nextActionInput: 0
-  doubleInputReceiveMode: 1
+  mode_doubleInputReceiveMode: 1
+  mode_swingTakesYouWithIt: 0
   <moveEndCooldown>k__BackingField: 0.05
   <rotateEndCooldown>k__BackingField: 0.1
   <swingEndCooldown>k__BackingField: 0.15
@@ -1361,7 +1363,7 @@ MonoBehaviour:
   exhaustedMaterial: {fileID: 2100000, guid: e4e70461ea131284f8b4b0812f821d14, type: 2}
   leftAnchor: {x: 1, y: 0.35, z: 0}
   rightAnchor: {x: -1, y: 0.35, z: 0}
-  swingSpeed: 20
+  <swingSpeed>k__BackingField: 10
 --- !u!1001 &1865256028
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovements))]
@@ -25,6 +26,8 @@ public class PlayerController : MonoBehaviour
     [field: SerializeField]
     public bool ballastLeft { get; private set; } = false;
 
+    public float moveSpeedDuringSwing => movements.baseTransitionSpeed + demonicArm.swingSpeed;
+
     public HexCoord.Orientation edgeDirectionForward => ballastLeft ? playerOrientation : playerOrientation - 1;
     public HexCoord.Orientation edgeDirectionAntiForward => !ballastLeft ? playerOrientation : playerOrientation - 1;
     public HexCoord.Orientation edgeDirectionBackward => ballastLeft ? playerOrientation + 2 : playerOrientation - 3;
@@ -38,7 +41,9 @@ public class PlayerController : MonoBehaviour
     private PlayerInputs.ActionInputs nextActionInput = PlayerInputs.ActionInputs.None;
 
     [SerializeField]
-    private bool doubleInputReceiveMode = true;
+    private bool mode_doubleInputReceiveMode = true;
+    [SerializeField]
+    private bool mode_swingTakesYouWithIt = true;
 
     private HexCoord targetGridPos;
 
@@ -103,37 +108,77 @@ public class PlayerController : MonoBehaviour
                 currentActionInput = PlayerInputs.ActionInputs.None;
                 return;
             }
-            Vector3 targetMovePos = HexGrid.Instance.GetWorldPos(targetGridPos);
-            movements.Move(targetMovePos);
+            MoveTo(targetGridPos);
         }
 
         if (targetOrientation != playerOrientation)
         {
-            Quaternion targetRotation = targetOrientation.GetUnderlyingRotation();
-            movements.Rotate(targetRotation);
+            RotateTo(targetOrientation);
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="hexOrientation">The hex orientation to rotate to</param>
+    private void RotateTo(HexCoord.Orientation hexOrientation)
+    {
+        Quaternion targetRotation = hexOrientation.GetUnderlyingRotation();
+        movements.Rotate(targetRotation);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="gridPos">The grid coordinates to move to</param>
+    private void MoveTo(HexCoord gridPos, float customSpeed = -1f)
+    {
+        Vector3 targetMovePos = HexGrid.Instance.GetWorldPos(gridPos);
+        movements.Move(targetMovePos, customSpeed);
     }
 
     private void TakeASwing()
     {
         if (!CanSwing())
         {
-            Debug.Log("You can't swing, it's on cooldown");
             currentActionInput = PlayerInputs.ActionInputs.None;
             return;
         }
         demonicArm.Swing();
+
+        if(mode_swingTakesYouWithIt)
+        {
+            TargetMovement(PlayerInputs.ActionInputs.Forward, true);
+            MoveTo(targetGridPos, moveSpeedDuringSwing);
+        }
+
         StartCoroutine(SwingCooldownCoroutine());
     }
 
     private bool CanSwing()
     {
-        return !isOnSwingCooldown;
+        if (isOnSwingCooldown)
+        {
+            Debug.Log("You can't swing, it's on cooldown");
+            return false;
+        }
+        if (movements.isMoving)
+        {
+            Debug.Log("You can't swing while moving");
+            return false;
+        }
+        if (movements.isRotating)
+        {
+            Debug.Log("You can't swing while rotating");
+            return false;
+        }
+
+        return true;
     }
 
     private bool CanAct()
     {
-        if (!movements.isMoving && !movements.isRotating && !isOnActionCooldown && !demonicArm.isSwinging)
+        if (!movements.isMoving && !movements.isRotating && !isOnActionCooldown)
         {
             return true;
         }
@@ -150,7 +195,12 @@ public class PlayerController : MonoBehaviour
     /// <param name="highPriority">Add to buffer?</param>
     public void ReceiveActionInput(PlayerInputs.ActionInputs input, bool highPriority = false)
     {
-        if (doubleInputReceiveMode)
+        if (mode_swingTakesYouWithIt && demonicArm.isSwinging)
+        {
+            return;
+        }
+
+        if (mode_doubleInputReceiveMode)
         {
             if (movements.isMoving && highPriority)
             {
