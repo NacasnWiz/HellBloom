@@ -9,7 +9,7 @@ public struct HexCoord
     public int q;
     public int s;
 
-    public readonly int r { get { return -q - s; } }
+    public readonly int r => -q - s;
 
     public static HexCoord zero = new HexCoord(0, 0);
 

@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
 
 
     public HexCoord playerPos { get; private set; } = HexCoord.zero;
-    public HexCoord.Orientation playerOrientation { get; private set; } = 0;//always acts like an edgeDirection with a ballastRight = left;
+    public HexCoord.Orientation playerOrientation { get; private set; } = 0;//always acts like an edgeDirection with a ballastLeft = true;
     [field: SerializeField]
     public bool ballastLeft { get; private set; } = false;
 
