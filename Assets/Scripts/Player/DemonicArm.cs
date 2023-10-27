@@ -14,7 +14,7 @@ public class DemonicArm : MonoBehaviour
     [SerializeField] private Material baseMaterial;
     [SerializeField] private Material exhaustedMaterial;
 
-    private bool isOnLeft = false;
+    private bool isOnLeft = false;//not physically linked to PlayerController.ballastLeft
 
     [SerializeField] private Vector3 leftAnchor = new(1f, 0.35f, 0f);
     [SerializeField] private Vector3 rightAnchor = new(-1f, 0.35f, 0f);
@@ -24,7 +24,7 @@ public class DemonicArm : MonoBehaviour
     public float swingSpeed { get; private set; } = 10f;
 
 
-    public readonly UnityEvent doneSwinging = new UnityEvent();
+    //public readonly UnityEvent doneSwinging = new UnityEvent();
 
 
     private void Reset()
@@ -58,7 +58,7 @@ public class DemonicArm : MonoBehaviour
         isSwinging = false;
         isOnLeft = !isOnLeft;
 
-        doneSwinging.Invoke();
+        //doneSwinging.Invoke();
     }
 
     public void ChangeAppearance(bool readyToSwing)

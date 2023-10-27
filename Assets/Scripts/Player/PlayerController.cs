@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     [field: SerializeField]
     public bool ballastLeft { get; private set; } = false;
 
-    public float moveSpeedDuringSwing => movements.baseTransitionSpeed + demonicArm.swingSpeed;
+    public float moveSpeedDuringSwing => movements.baseTransitionSpeed/2f + demonicArm.swingSpeed;
 
     public HexCoord.Orientation edgeDirectionForward => ballastLeft ? playerOrientation : playerOrientation - 1;
     public HexCoord.Orientation edgeDirectionAntiForward => !ballastLeft ? playerOrientation : playerOrientation - 1;
@@ -54,8 +54,6 @@ public class PlayerController : MonoBehaviour
     [field: SerializeField]
     public float rotateEndCooldown { get; private set; } = 0.1f;
     [field: SerializeField]
-    public float swingEndCooldown { get; private set; } = 0.15f;
-    [field: SerializeField]
     public float swingCooldown { get; private set; } = 2f;
 
     public bool isOnActionCooldown { get; private set; } = false;
@@ -66,10 +64,10 @@ public class PlayerController : MonoBehaviour
     {
         //movements.doneMoving.AddListener((coords) => Debug.Log(coords));
 
-        movements.doneMoving.AddListener(() => OnEndAction(Actions.Move));
-        movements.doneRotating.AddListener(() => OnEndAction(Actions.Rotate));
-        inputs.wantSwing.AddListener(() => TakeASwing());
-        demonicArm.doneSwinging.AddListener(() => OnEndAction(Actions.Swing));
+        movements.doneMoving.AddListener(() => OnEndMovement(Actions.Move));
+        movements.doneRotating.AddListener(() => OnEndMovement(Actions.Rotate));
+        //inputs.wantSwing.AddListener(() => TakeASwing());
+        //demonicArm.doneSwinging.AddListener(() => OnEndMovement(Actions.Swing));
 
 
         Application.targetFrameRate = 60;
@@ -84,10 +82,13 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if(currentActionInput == PlayerInputs.ActionInputs.Swing)
+        {
+            TakeASwing();
+        }
+
         if(currentActionInput != PlayerInputs.ActionInputs.None)
         {
-            TargetMovement(currentActionInput);
-
             PlayerAct();
         }
     }
@@ -98,6 +99,7 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
+        TargetMovement(currentActionInput);
 
         if (targetGridPos != playerPos)
         {
@@ -145,6 +147,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
         demonicArm.Swing();
+        ballastLeft = !ballastLeft;
 
         if(mode_swingTakesYouWithIt)
         {
@@ -202,15 +205,17 @@ public class PlayerController : MonoBehaviour
 
         if (mode_doubleInputReceiveMode)
         {
-            if (movements.isMoving && highPriority)
+            if ((movements.isMoving || movements.isRotating) && highPriority)
             {
                 nextActionInput = input;
             }
 
-            if (currentActionInput == PlayerInputs.ActionInputs.None && input != PlayerInputs.ActionInputs.None)
-            {
-                currentActionInput = input;
-            }
+            currentActionInput = input;
+
+            //if (currentActionInput == PlayerInputs.ActionInputs.None && input != PlayerInputs.ActionInputs.None)
+            //{
+            //    currentActionInput = input;
+            //}
         }
         else
         {
@@ -218,7 +223,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void OnEndAction(Actions actionEnded)
+    private void OnEndMovement(Actions actionEnded)
     {
         float actionEndCooldown = 0f;
         switch(actionEnded)
@@ -231,33 +236,31 @@ public class PlayerController : MonoBehaviour
                 playerOrientation = targetOrientation;
                 actionEndCooldown = rotateEndCooldown;
                 break;
-            case Actions.Swing:
-                ballastLeft = !ballastLeft;
-                actionEndCooldown = swingEndCooldown;
-                break;
 
             default:
                 break;
         }
 
-        StartCoroutine(EndActionCoroutine(actionEndCooldown));
+        StartCoroutine(EndMovementCoroutine(actionEndCooldown));
     }
 
-    private IEnumerator EndActionCoroutine(float endActionCooldown)
+    private IEnumerator EndMovementCoroutine(float endActionCooldown)
     {
-        currentActionInput = nextActionInput;
-        nextActionInput = PlayerInputs.ActionInputs.None;
+
 
         isOnActionCooldown = true;
         yield return new WaitForSeconds(endActionCooldown);
         isOnActionCooldown = false;
+
+        currentActionInput = nextActionInput;
+        nextActionInput = PlayerInputs.ActionInputs.None;
     }
 
     private IEnumerator SwingCooldownCoroutine()
     {
         isOnSwingCooldown = true;
         demonicArm.ChangeAppearance(!isOnSwingCooldown);
-        yield return new WaitForSeconds(swingCooldown + swingEndCooldown);
+        yield return new WaitForSeconds(swingCooldown);
         isOnSwingCooldown = false;
         demonicArm.ChangeAppearance(!isOnSwingCooldown);
     }
