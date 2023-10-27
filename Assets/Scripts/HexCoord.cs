@@ -26,7 +26,8 @@ public struct HexCoord
 
         public static implicit operator Orientation(int i) => new Orientation(i);
         public static implicit operator int(Orientation o) => o.Direction;
-        public static Orientation operator +(Orientation o, int i) => new Orientation(i + o.Direction);
+        public static Orientation operator +(Orientation o, int i) => new Orientation(o.Direction + i);
+        //public static Orientation operator -(Orientation o, int i) => new Orientation(o.Direction - i);
 
         public override string ToString()
         {

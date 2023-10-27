@@ -52,6 +52,8 @@ public class PlayerController : MonoBehaviour
     public float moveEndCooldown { get; private set; } = 0.05f;
     [field: SerializeField]
     public float rotateEndCooldown { get; private set; } = 0.1f;
+    //[field: SerializeField]
+    //public float swingEndCooldown { get; private set; } = 0.15f;
     [field: SerializeField]
     public float swingCooldown { get; private set; } = 2f;
 
@@ -86,10 +88,41 @@ public class PlayerController : MonoBehaviour
             TakeASwing();
         }
 
-        if(currentActionInput != PlayerInputs.ActionInputs.None)
+        if (currentActionInput != PlayerInputs.ActionInputs.None)
         {
             PlayerAct();
         }
+    }
+
+    private bool IsInMovement()
+    {
+        return (movements.isMoving || movements.isRotating);
+    }
+
+    private bool CanSwing()
+    {
+        if (isOnSwingCooldown)
+        {
+            Debug.Log("You can't swing, it's on cooldown");
+            return false;
+        }
+        if (IsInMovement())
+        {
+            Debug.Log("You can't swing while in movement.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool CanAct()
+    {
+        if (IsInMovement() || isOnActionCooldown)
+        {
+            return false;
+        }
+        
+        return true;
     }
 
     private void PlayerAct()
@@ -106,7 +139,7 @@ public class PlayerController : MonoBehaviour
             {
                 Debug.Log("You can't move there.");
                 targetGridPos = playerPos;
-                currentActionInput = PlayerInputs.ActionInputs.None;
+                ResetCurrentInput();
                 return;
             }
             MoveTo(targetGridPos);
@@ -142,52 +175,65 @@ public class PlayerController : MonoBehaviour
     {
         if (!CanSwing())
         {
-            currentActionInput = PlayerInputs.ActionInputs.None;
             return;
         }
+
         demonicArm.Swing();
         ballastLeft = !ballastLeft;
 
         if(mode_swingTakesYouWithIt)
         {
-            TargetMovement(PlayerInputs.ActionInputs.Forward, true);
+            TargetMovement(PlayerInputs.ActionInputs.Forward);
             MoveTo(targetGridPos, moveSpeedDuringSwing);
         }
-
+        
         StartCoroutine(SwingCooldownCoroutine());
+        ResetCurrentInput();
     }
 
-    private bool CanSwing()
+    private void OnEndMovement(Actions actionEnded)
     {
-        if (isOnSwingCooldown)
+        float actionEndCooldown = 0f;
+        switch (actionEnded)
         {
-            Debug.Log("You can't swing, it's on cooldown");
-            return false;
-        }
-        if (movements.isMoving)
-        {
-            Debug.Log("You can't swing while moving");
-            return false;
-        }
-        if (movements.isRotating)
-        {
-            Debug.Log("You can't swing while rotating");
-            return false;
+            case Actions.Move:
+                playerPos = targetGridPos;
+                actionEndCooldown = moveEndCooldown;
+                break;
+            case Actions.Rotate:
+                playerOrientation = targetOrientation;
+                actionEndCooldown = rotateEndCooldown;
+                break;
+            //case Actions.Swing:
+            //    currentActionInput = PlayerInputs.ActionInputs.None;
+            //    actionEndCooldown = swingEndCooldown;
+            //    break;
+
+            default:
+                break;
         }
 
-        return true;
+        StartCoroutine(EndMovementCoroutine(actionEndCooldown));
     }
 
-    private bool CanAct()
+    private IEnumerator EndMovementCoroutine(float endActionCooldown)
     {
-        if (!movements.isMoving && !movements.isRotating && !isOnActionCooldown)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+
+
+        isOnActionCooldown = true;
+        yield return new WaitForSeconds(endActionCooldown);
+        isOnActionCooldown = false;
+
+        ResetCurrentInput();
+    }
+
+    private IEnumerator SwingCooldownCoroutine()
+    {
+        isOnSwingCooldown = true;
+        demonicArm.ChangeAppearance(!isOnSwingCooldown);
+        yield return new WaitForSeconds(swingCooldown);
+        isOnSwingCooldown = false;
+        demonicArm.ChangeAppearance(!isOnSwingCooldown);
     }
 
     /// <summary>
@@ -197,13 +243,15 @@ public class PlayerController : MonoBehaviour
     /// <param name="highPriority">Add to buffer?</param>
     public void ReceiveActionInput(PlayerInputs.ActionInputs input, bool highPriority = false)
     {
-        if (mode_swingTakesYouWithIt && demonicArm.isSwinging)
+        if (mode_swingTakesYouWithIt && demonicArm.isSwinging) //Take no input while swinging.
         {
             return;
         }
 
         if (mode_doubleInputReceiveMode)
         {
+            if (nextActionInput == PlayerInputs.ActionInputs.Swing) return;
+
             if ((movements.isMoving || movements.isRotating) && highPriority)
             {
                 nextActionInput = input;
@@ -221,48 +269,12 @@ public class PlayerController : MonoBehaviour
             currentActionInput = input;
         }
     }
-
-    private void OnEndMovement(Actions actionEnded)
+    private void ResetCurrentInput()
     {
-        float actionEndCooldown = 0f;
-        switch(actionEnded)
-        {
-            case Actions.Move:
-                playerPos = targetGridPos;
-                actionEndCooldown = moveEndCooldown;
-                break;
-            case Actions.Rotate:
-                playerOrientation = targetOrientation;
-                actionEndCooldown = rotateEndCooldown;
-                break;
-
-            default:
-                break;
-        }
-
-        StartCoroutine(EndMovementCoroutine(actionEndCooldown));
-    }
-
-    private IEnumerator EndMovementCoroutine(float endActionCooldown)
-    {
-
-
-        isOnActionCooldown = true;
-        yield return new WaitForSeconds(endActionCooldown);
-        isOnActionCooldown = false;
-
         currentActionInput = nextActionInput;
         nextActionInput = PlayerInputs.ActionInputs.None;
     }
 
-    private IEnumerator SwingCooldownCoroutine()
-    {
-        isOnSwingCooldown = true;
-        demonicArm.ChangeAppearance(!isOnSwingCooldown);
-        yield return new WaitForSeconds(swingCooldown);
-        isOnSwingCooldown = false;
-        demonicArm.ChangeAppearance(!isOnSwingCooldown);
-    }
 
     private void TargetMovement(PlayerInputs.ActionInputs instruction, bool invertedBallast = false)
     {
