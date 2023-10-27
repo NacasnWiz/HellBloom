@@ -24,7 +24,7 @@ public class DemonicArm : MonoBehaviour
     public float swingSpeed { get; private set; } = 10f;
 
 
-    //public readonly UnityEvent doneSwinging = new UnityEvent();
+    public readonly UnityEvent doneSwinging = new UnityEvent();
 
 
     private void Reset()
@@ -58,7 +58,7 @@ public class DemonicArm : MonoBehaviour
         isSwinging = false;
         isOnLeft = !isOnLeft;
 
-        //doneSwinging.Invoke();
+        doneSwinging.Invoke();
     }
 
     public void ChangeAppearance(bool readyToSwing)

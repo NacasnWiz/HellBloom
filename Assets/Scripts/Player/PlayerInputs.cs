@@ -36,8 +36,6 @@ public class PlayerInputs : MonoBehaviour
     public KeyCode swing = KeyCode.Space;
 
 
-    //public readonly UnityEvent wantSwing = new UnityEvent();
-
 
     private void Reset()
     {

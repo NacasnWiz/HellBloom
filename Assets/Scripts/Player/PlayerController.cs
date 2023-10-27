@@ -52,8 +52,8 @@ public class PlayerController : MonoBehaviour
     public float moveEndCooldown { get; private set; } = 0.05f;
     [field: SerializeField]
     public float rotateEndCooldown { get; private set; } = 0.1f;
-    //[field: SerializeField]
-    //public float swingEndCooldown { get; private set; } = 0.15f;
+    [field: SerializeField]
+    public float swingEndCooldown { get; private set; } = 0.15f;
     [field: SerializeField]
     public float swingCooldown { get; private set; } = 2f;
 
@@ -67,8 +67,7 @@ public class PlayerController : MonoBehaviour
 
         movements.doneMoving.AddListener(() => OnEndMovement(Actions.Move));
         movements.doneRotating.AddListener(() => OnEndMovement(Actions.Rotate));
-        //inputs.wantSwing.AddListener(() => TakeASwing());
-        //demonicArm.doneSwinging.AddListener(() => OnEndMovement(Actions.Swing));
+        demonicArm.doneSwinging.AddListener(() => OnEndMovement(Actions.Swing));
 
 
         Application.targetFrameRate = 60;
@@ -204,10 +203,10 @@ public class PlayerController : MonoBehaviour
                 playerOrientation = targetOrientation;
                 actionEndCooldown = rotateEndCooldown;
                 break;
-            //case Actions.Swing:
-            //    currentActionInput = PlayerInputs.ActionInputs.None;
-            //    actionEndCooldown = swingEndCooldown;
-            //    break;
+            case Actions.Swing:
+                currentActionInput = PlayerInputs.ActionInputs.None;
+                actionEndCooldown = swingEndCooldown;
+                break;
 
             default:
                 break;
@@ -252,17 +251,12 @@ public class PlayerController : MonoBehaviour
         {
             if (nextActionInput == PlayerInputs.ActionInputs.Swing) return;
 
-            if ((movements.isMoving || movements.isRotating) && highPriority)
+            if ((!CanAct()) && highPriority)
             {
                 nextActionInput = input;
             }
 
             currentActionInput = input;
-
-            //if (currentActionInput == PlayerInputs.ActionInputs.None && input != PlayerInputs.ActionInputs.None)
-            //{
-            //    currentActionInput = input;
-            //}
         }
         else
         {
