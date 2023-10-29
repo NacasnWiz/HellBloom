@@ -134,13 +134,6 @@ public class PlayerController : MonoBehaviour
 
         if (targetGridPos != playerPos)
         {
-            if (!(HexGrid.Instance.isValidCoordinates(targetGridPos)))
-            {
-                Debug.Log("You can't move there.");
-                targetGridPos = playerPos;
-                ResetCurrentInput();
-                return;
-            }
             MoveTo(targetGridPos);
         }
 
@@ -166,6 +159,13 @@ public class PlayerController : MonoBehaviour
     /// <param name="gridPos">The grid coordinates to move to</param>
     private void MoveTo(HexCoord gridPos, float customSpeed = -1f)
     {
+        if (!(HexGrid.Instance.isValidCoordinates(targetGridPos)))
+        {
+            Debug.Log("You can't move there.");
+            targetGridPos = playerPos;
+            ResetCurrentInput();
+            return;
+        }
         Vector3 targetMovePos = HexGrid.Instance.GetWorldPos(gridPos);
         movements.Move(targetMovePos, customSpeed);
     }
