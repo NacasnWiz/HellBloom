@@ -82,12 +82,12 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(currentActionInput == PlayerInputs.ActionInputs.Swing)
+        if(currentActionInput == PlayerInputs.ActionInputs.Swing || nextActionInput == PlayerInputs.ActionInputs.Swing)
         {
             TakeASwing();
         }
 
-        if (currentActionInput != PlayerInputs.ActionInputs.None)
+        if (currentActionInput != PlayerInputs.ActionInputs.None || nextActionInput != PlayerInputs.ActionInputs.None)
         {
             PlayerAct();
         }
@@ -130,7 +130,16 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
-        TargetMovement(currentActionInput);
+
+        if(nextActionInput != PlayerInputs.ActionInputs.None)
+        {
+            TargetMovement(nextActionInput);
+            nextActionInput = PlayerInputs.ActionInputs.None;
+        }
+        else
+        {
+            TargetMovement(currentActionInput);
+        }
 
         if (targetGridPos != playerPos)
         {
@@ -223,7 +232,7 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(endActionCooldown);
         isOnActionCooldown = false;
 
-        ResetCurrentInput();
+        //ResetCurrentInput();
     }
 
     private IEnumerator SwingCooldownCoroutine()
@@ -265,8 +274,11 @@ public class PlayerController : MonoBehaviour
     }
     private void ResetCurrentInput()
     {
-        currentActionInput = nextActionInput;
+        Debug.Log("reseting input, current was " + currentActionInput + " and next was " + nextActionInput);
+
+        currentActionInput = PlayerInputs.ActionInputs.None;
         nextActionInput = PlayerInputs.ActionInputs.None;
+
     }
 
 
