@@ -217,7 +217,8 @@ MonoBehaviour:
   mode_doubleInputReceiveMode: 1
   mode_swingTakesYouWithIt: 1
   <moveEndCooldown>k__BackingField: 0.05
-  <rotateEndCooldown>k__BackingField: 0.1
+  <rotateEndCooldown>k__BackingField: 0.075
+  <swingEndCooldown>k__BackingField: 0.15
   <swingCooldown>k__BackingField: 3
 --- !u!1 &454200831
 GameObject:
