@@ -51,6 +51,7 @@ public class PlayerInputs : MonoBehaviour
         if (Input.GetKeyDown(turnLeft)) { actionInput = ActionInputs.TurnLeft; lastPressed.Add(turnLeft); }
         if (Input.GetKeyDown(turnRight)) { actionInput = ActionInputs.TurnRight; lastPressed.Add(turnRight); }
         if (Input.GetKeyDown(swing)) actionInput = ActionInputs.Swing;
+
         if (actionInput != ActionInputs.None)
         {
             controller.ReceiveActionInput(actionInput, true);

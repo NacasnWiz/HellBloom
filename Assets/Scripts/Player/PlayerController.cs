@@ -80,7 +80,7 @@ public class PlayerController : MonoBehaviour
         demonicArm = gameObject.GetComponent<DemonicArm>();
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         if(currentActionInput == PlayerInputs.ActionInputs.Swing)
         {
@@ -223,6 +223,7 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(endActionCooldown);
         isOnActionCooldown = false;
 
+        yield return new WaitForEndOfFrame();
         ResetCurrentInput();
     }
 
@@ -255,14 +256,28 @@ public class PlayerController : MonoBehaviour
             {
                 nextActionInput = input;
             }
-
-            currentActionInput = input;
+            else if (input == PlayerInputs.ActionInputs.None)
+            {
+                StartCoroutine(NoneInputCoroutine());
+            }
+            else
+            {
+                currentActionInput = input;
+            }
+            
         }
         else
         {
             currentActionInput = input;
         }
     }
+
+    private IEnumerator NoneInputCoroutine()
+    {
+        yield return new WaitForEndOfFrame();
+        currentActionInput = PlayerInputs.ActionInputs.None;
+    }
+
     private void ResetCurrentInput()
     {
         currentActionInput = nextActionInput;
