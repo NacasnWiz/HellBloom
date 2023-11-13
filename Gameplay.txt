@@ -1,0 +1,2 @@
+Each enemy you kill drops on the floor, you can climb the bodies. If multiple drop on the same Tile, they pile up.
+One kind of enemy carries explosive charge, and will explode after a short time on death. The explosion clears nearby corpses AND opens a breach in the ceiling.
