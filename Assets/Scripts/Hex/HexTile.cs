@@ -22,9 +22,18 @@ public class HexTile : MonoBehaviour
         }
     }
 
+    public Enemy containedEnemy = null;
+
     private void OnMouseDown()
     {
         Debug.Log(_gridCoordinates);
+    }
+
+    public void Damage(int amount)
+    {
+        if(containedEnemy == null) { return; }
+
+        containedEnemy.TakeDamage(amount);
     }
 
 }

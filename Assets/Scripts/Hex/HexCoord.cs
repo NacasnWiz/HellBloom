@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+[System.Serializable]
 public struct HexCoord
 {
-    public int q;
-    public int s;
+    public Vector2Int _coords;
+    public int q { get { return _coords.x; } set { _coords.x = value; } }
+    public int s { get { return _coords.y; } set { _coords.y = value; } }
 
-    public readonly int r => -q - s;
+    public int r => -q - s;
 
     public static HexCoord zero = new HexCoord(0, 0);
 
@@ -54,8 +55,7 @@ public struct HexCoord
 
     public HexCoord(int q = 0, int s = 0)
     {
-        this.q = q;
-        this.s = s;
+        this._coords = new Vector2Int(q, s);
     }
 
     public static HexCoord operator +(HexCoord a, HexCoord b)
@@ -81,7 +81,7 @@ public struct HexCoord
         return !(a == b);
     }
 
-    public override readonly bool Equals(object obj)
+    public override bool Equals(object obj)
     {
         if ((obj == null) || !this.GetType().Equals(obj.GetType()))
         {
@@ -93,7 +93,7 @@ public struct HexCoord
         }
     }
 
-    public override readonly int GetHashCode()
+    public override int GetHashCode()
     {
         return Tuple.Create(q, s).GetHashCode();
     }

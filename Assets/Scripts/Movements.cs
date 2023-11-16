@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class PlayerMovements : MonoBehaviour
+public class Movements : MonoBehaviour
 {
     [field: SerializeField]
     public float baseTransitionSpeed { get; private set; } = 10f;
-    [field: SerializeField]
     public float currentTransitionSpeed { get; private set; }
 
     [SerializeField]

@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerMovements))]
+[RequireComponent(typeof(Movements))]
+[RequireComponent(typeof(PlayerAttack))]
 //[RequireComponent (typeof(PlayerInputs))]
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] PlayerMovements movements;
+    [SerializeField] Movements movements;
     //[SerializeField] PlayerInputs inputs;
+    [SerializeField] PlayerAttack attack;
 
     public enum Actions
     {
@@ -49,9 +51,9 @@ public class PlayerController : MonoBehaviour
     private HexCoord.Orientation targetOrientation;
 
     [field: SerializeField]
-    public float moveEndCooldown { get; private set; } = 0.05f;
+    public float moveEndCooldown { get; private set; } = 0.025f;
     [field: SerializeField]
-    public float rotateEndCooldown { get; private set; } = 0.1f;
+    public float rotateEndCooldown { get; private set; } = 0.05f;
     [field: SerializeField]
     public float swingEndCooldown { get; private set; } = 0.15f;
     [field: SerializeField]
@@ -75,9 +77,10 @@ public class PlayerController : MonoBehaviour
 
     private void Reset()
     {
-        movements = gameObject.GetComponent<PlayerMovements>();
+        movements = gameObject.GetComponent<Movements>();
         //inputs = gameObject.GetComponent<PlayerInputs>();
-        demonicArm = gameObject.GetComponent<DemonicArm>();
+        demonicArm = gameObject.GetComponentInChildren<DemonicArm>();
+        attack = gameObject.GetComponent<PlayerAttack>();
     }
 
     private void Update()
@@ -172,14 +175,14 @@ public class PlayerController : MonoBehaviour
     /// <param name="gridPos">The grid coordinates to move to</param>
     private void MoveTo(HexCoord gridPos, float customSpeed = -1f)
     {
-        if (!HexGrid.Instance.isValidCoordinates(targetGridPos))
+        if (!GameManager.Instance.CanMoveTo(targetGridPos))
         {
             Debug.Log("You can't move there.");
             targetGridPos = playerPos;
             currentActionInput = PlayerInputs.ActionInputs.None;
             return;
         }
-        Vector3 targetMovePos = HexGrid.Instance.GetWorldPos(gridPos);
+        Vector3 targetMovePos = GameManager.Instance.hexGrid.GetWorldPos(gridPos);
         movements.Move(targetMovePos, customSpeed);
     }
 
@@ -191,6 +194,7 @@ public class PlayerController : MonoBehaviour
         }
 
         demonicArm.Swing();
+        attack.Attack(this);
         ballastLeft = !ballastLeft;
 
         if(mode_swingTakesYouWithIt)

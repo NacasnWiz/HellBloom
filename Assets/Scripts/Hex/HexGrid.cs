@@ -5,20 +5,20 @@ using UnityEngine;
 
 public class HexGrid : MonoBehaviour
 {
-    private static HexGrid _instance;
+    //private static HexGrid _instance;
 
-    public static HexGrid Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                Debug.LogError("Hex Grid is Null !!!");
-            }
+    //public static HexGrid Instance
+    //{
+    //    get
+    //    {
+    //        if (_instance == null)
+    //        {
+    //            Debug.LogError("Hex Grid is Null !!!");
+    //        }
 
-            return _instance;
-        }
-    }
+    //        return _instance;
+    //    }
+    //}
 
     [field: SerializeField]
     public float hexSize { get; private set; } = 1f;//OuterRadius
@@ -41,26 +41,30 @@ public class HexGrid : MonoBehaviour
 
     private void Awake()
     {
-        if(_instance == null)
-        {
-            _instance = this;
-        }
-        else
-        {
-            Destroy(this);
-        }
+        //if(_instance == null)
+        //{
+        //    _instance = this;
+        //}
+        //else
+        //{
+        //    Destroy(this);
+        //}
 
         hexInnerRadius = hexSize * Mathf.Sqrt(3f) / 2;
         spacingHorizontal = hexInnerRadius * 2f;
         spacingVertical = hexSize * 3f / 2f;
 
         rOffset = new Vector2(spacingHorizontal / 2, spacingVertical);
+
+        CreateTiles();
     }
 
 
     private void Start()
     {
-        CreateTiles();
+        Enemy.ev_moved.AddListener((enemy) => RegisterEnemyMove(enemy));
+        
+        //CreateTiles();
 
         //foreach(HexCoord coord in ((HexCoord)(0, 0)).CellsInRange(1))
         //{
@@ -74,8 +78,14 @@ public class HexGrid : MonoBehaviour
         //Debug.Log( hexTest == (HexCoord)((int, int))hexTest);//true grâce à la surcharge d'opérateur==
 
         //tiles[(0, 1)].GridCoordinates += (0, 1);  //Throws an exception
-
     }
+
+    private void RegisterEnemyMove(Enemy enemy)
+    {
+        tiles[enemy.lastPos].containedEnemy = null;
+        tiles[enemy.pos].containedEnemy = enemy;
+    }
+
 
     private void CreateTiles()
     {
