@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovements))]
-[RequireComponent (typeof(PlayerInputs))]
+//[RequireComponent (typeof(PlayerInputs))]
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] PlayerMovements movements;
-    [SerializeField] PlayerInputs inputs;
+    //[SerializeField] PlayerInputs inputs;
 
     public enum Actions
     {
@@ -76,7 +76,7 @@ public class PlayerController : MonoBehaviour
     private void Reset()
     {
         movements = gameObject.GetComponent<PlayerMovements>();
-        inputs = gameObject.GetComponent<PlayerInputs>();
+        //inputs = gameObject.GetComponent<PlayerInputs>();
         demonicArm = gameObject.GetComponent<DemonicArm>();
     }
 
@@ -86,8 +86,7 @@ public class PlayerController : MonoBehaviour
         {
             TakeASwing();
         }
-
-        if (currentActionInput != PlayerInputs.ActionInputs.None || nextActionInput != PlayerInputs.ActionInputs.None)
+        else if (currentActionInput != PlayerInputs.ActionInputs.None || nextActionInput != PlayerInputs.ActionInputs.None)
         {
             PlayerAct();
         }
@@ -108,6 +107,11 @@ public class PlayerController : MonoBehaviour
         if (IsInMovement())
         {
             Debug.Log("You can't swing while in movement.");
+            return false;
+        }
+        if (isOnActionCooldown)
+        {
+            Debug.Log("You're on action cooldown.");
             return false;
         }
 
@@ -136,7 +140,7 @@ public class PlayerController : MonoBehaviour
             TargetMovement(nextActionInput);
             nextActionInput = PlayerInputs.ActionInputs.None;
         }
-        else
+        else if(currentActionInput != PlayerInputs.ActionInputs.None)
         {
             TargetMovement(currentActionInput);
         }
@@ -168,11 +172,11 @@ public class PlayerController : MonoBehaviour
     /// <param name="gridPos">The grid coordinates to move to</param>
     private void MoveTo(HexCoord gridPos, float customSpeed = -1f)
     {
-        if (!(HexGrid.Instance.isValidCoordinates(targetGridPos)))
+        if (!HexGrid.Instance.isValidCoordinates(targetGridPos))
         {
             Debug.Log("You can't move there.");
             targetGridPos = playerPos;
-            ResetCurrentInput();
+            currentActionInput = PlayerInputs.ActionInputs.None;
             return;
         }
         Vector3 targetMovePos = HexGrid.Instance.GetWorldPos(gridPos);
@@ -196,7 +200,8 @@ public class PlayerController : MonoBehaviour
         }
         
         StartCoroutine(SwingCooldownCoroutine());
-        ResetCurrentInput();
+        currentActionInput = PlayerInputs.ActionInputs.None;
+        nextActionInput = PlayerInputs.ActionInputs.None;
     }
 
     private void OnEndMovement(Actions actionEnded)
@@ -231,7 +236,7 @@ public class PlayerController : MonoBehaviour
         isOnActionCooldown = false;
 
         yield return new WaitForEndOfFrame();
-        ResetCurrentInput();
+        currentActionInput = PlayerInputs.ActionInputs.None;
     }
 
     private IEnumerator SwingCooldownCoroutine()
@@ -282,11 +287,6 @@ public class PlayerController : MonoBehaviour
     private IEnumerator NoneInputCoroutine()
     {
         yield return new WaitForEndOfFrame();
-        currentActionInput = PlayerInputs.ActionInputs.None;
-    }
-
-    private void ResetCurrentInput()
-    {
         currentActionInput = PlayerInputs.ActionInputs.None;
     }
 

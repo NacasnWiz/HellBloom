@@ -187,7 +187,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 110755247}
-  actionInput: 0
+  <actionInput>k__BackingField: 0
   lastPressed: 
   forward: 119
   back: 115
@@ -216,8 +216,8 @@ MonoBehaviour:
   nextActionInput: 0
   mode_doubleInputReceiveMode: 1
   mode_swingTakesYouWithIt: 1
-  <moveEndCooldown>k__BackingField: 0.05
-  <rotateEndCooldown>k__BackingField: 0.075
+  <moveEndCooldown>k__BackingField: 0.025
+  <rotateEndCooldown>k__BackingField: 0.05
   <swingEndCooldown>k__BackingField: 0.15
   <swingCooldown>k__BackingField: 3
 --- !u!1 &454200831
