@@ -226,8 +226,6 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator EndMovementCoroutine(float endActionCooldown)
     {
-
-
         isOnActionCooldown = true;
         yield return new WaitForSeconds(endActionCooldown);
         isOnActionCooldown = false;
@@ -289,11 +287,7 @@ public class PlayerController : MonoBehaviour
 
     private void ResetCurrentInput()
     {
-        Debug.Log("reseting input, current was " + currentActionInput + " and next was " + nextActionInput);
-
         currentActionInput = PlayerInputs.ActionInputs.None;
-        nextActionInput = PlayerInputs.ActionInputs.None;
-
     }
 
 

@@ -22,8 +22,8 @@ public class PlayerInputs : MonoBehaviour
         Swing = 5
     }
 
-    [SerializeField]
-    private ActionInputs actionInput;
+    [field: SerializeField]
+    public ActionInputs actionInput { get; private set; }
     [SerializeField]
     private List<KeyCode> lastPressed;
 
