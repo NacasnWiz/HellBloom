@@ -7,12 +7,14 @@ public class HexTile : MonoBehaviour
 {
     private bool hasBeenSet = false;
     private HexCoord _gridCoordinates;
+    [SerializeField]
     public HexCoord GridCoordinates{
         get { return _gridCoordinates; }
         set {
             if (!hasBeenSet)
             {
                 _gridCoordinates = value;
+                gameObject.name = "tile " + _gridCoordinates.ToString();
                 hasBeenSet = true;
             }
             else

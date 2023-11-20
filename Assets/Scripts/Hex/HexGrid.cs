@@ -2,24 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using System.Linq;
 
 public class HexGrid : MonoBehaviour
 {
-    //private static HexGrid _instance;
-
-    //public static HexGrid Instance
-    //{
-    //    get
-    //    {
-    //        if (_instance == null)
-    //        {
-    //            Debug.LogError("Hex Grid is Null !!!");
-    //        }
-
-    //        return _instance;
-    //    }
-    //}
-
     [field: SerializeField]
     public float hexSize { get; private set; } = 1f;//OuterRadius
     public float hexInnerRadius { get; private set; }
@@ -35,21 +21,12 @@ public class HexGrid : MonoBehaviour
     [SerializeField]
     private HexTile hexTilePrefab;
 
-    private Dictionary<HexCoord, HexTile> tiles = new Dictionary<HexCoord, HexTile>(); //Soon to be HexCube instead of Vector3Int
+    public Dictionary<HexCoord, HexTile> tiles { get; private set; } = new();
 
 
 
     private void Awake()
     {
-        //if(_instance == null)
-        //{
-        //    _instance = this;
-        //}
-        //else
-        //{
-        //    Destroy(this);
-        //}
-
         hexInnerRadius = hexSize * Mathf.Sqrt(3f) / 2;
         spacingHorizontal = hexInnerRadius * 2f;
         spacingVertical = hexSize * 3f / 2f;
@@ -59,49 +36,21 @@ public class HexGrid : MonoBehaviour
         CreateTiles();
     }
 
-
-    private void Start()
-    {
-        Enemy.ev_moved.AddListener((enemy) => RegisterEnemyMove(enemy));
-        
-        //CreateTiles();
-
-        //foreach(HexCoord coord in ((HexCoord)(0, 0)).CellsInRange(1))
-        //{
-        //    Debug.Log(coord);
-        //}
-
-        //Debug.Log(tiles[(0, 0)].GridCoordinates);
-
-        //HexCoord hexTest = new HexCoord(0,0);
-        //Debug.Log( (0,0) == hexTest);//true
-        //Debug.Log( hexTest == (HexCoord)((int, int))hexTest);//true grâce à la surcharge d'opérateur==
-
-        //tiles[(0, 1)].GridCoordinates += (0, 1);  //Throws an exception
-    }
-
-    private void RegisterEnemyMove(Enemy enemy)
-    {
-        tiles[enemy.lastPos].containedEnemy = null;
-        tiles[enemy.pos].containedEnemy = enemy;
-    }
-
-
     private void CreateTiles()
     {
-        for (int i = -gridSize; i <= gridSize; ++i)
+        for (int s = -gridSize; s <= gridSize; ++s)
         {
-            for(int j = -gridSize; j <= gridSize; ++j)
+            for (int q = -gridSize; q <= gridSize; ++q)
             {
-                int r = -i - j;
-                if(Mathf.Abs(r) <= gridSize)//it is a valid coordinate if  -gridSize < r = -i -j < gridSize
+                int r = -s - q;
+                if (Mathf.Abs(r) <= gridSize)//it is a valid coordinate if  -gridSize < r = -i -j < gridSize
                 {
-                    float horizontalPos = i * spacingHorizontal + r * rOffset.x;
+                    float horizontalPos = s * spacingHorizontal + r * rOffset.x;
                     float verticalPos = r * rOffset.y;
 
-                    Vector3 newTilePos = new (horizontalPos, 0f, verticalPos);
+                    Vector3 newTilePos = new(horizontalPos, 0f, verticalPos);
                     HexTile newTile = Instantiate(hexTilePrefab, newTilePos, Quaternion.identity, transform);
-                    newTile.GridCoordinates = new HexCoord(-j, -i);
+                    newTile.GridCoordinates = new HexCoord(-q, -s);
                     tiles.Add(newTile.GridCoordinates, newTile);
                 }
             }
@@ -118,9 +67,46 @@ public class HexGrid : MonoBehaviour
         return GetTile(gridTileCoord).transform.position;
     }
 
-    public bool isValidCoordinates(HexCoord coord)
+    public bool IsExistingCoordinates(HexCoord coord)
     {
         return tiles.ContainsKey(coord);
+    }
+
+    public bool IsValidMoveCoordinates(HexCoord coord)
+    {
+        if (!IsExistingCoordinates(coord)) return false;
+
+        if (tiles[coord].containedEnemy == null)
+            return true;
+        else
+            return !tiles[coord].containedEnemy.isAlive;
+    }
+
+    public HexCoord GetRandomGridCoordinates()
+    {
+        return tiles.Keys.ToArray()[Random.Range(0, tiles.Count)];
+    }
+
+    /// <summary>
+    /// Provides a copy of gridCoordinates, as a list
+    /// </summary>
+    /// <returns></returns>
+    public List<HexCoord> GetAllGridCoordinates()
+    {
+        return new(tiles.Keys.ToList());//because HexCoord are value type
+    }
+
+    public List<HexCoord> GetAllNeighbours(HexCoord pos)
+    {
+        List<HexCoord> output = new();
+        for(int i = 0; i < 6; ++i)
+        {
+            if(IsExistingCoordinates(HexCoord.GetNeighbour(pos, i)))
+            {
+                output.Add(HexCoord.GetNeighbour(pos, i));
+            }
+        }
+        return output;
     }
 
 }

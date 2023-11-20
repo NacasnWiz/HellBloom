@@ -23,7 +23,8 @@ public class GameManager : MonoBehaviour
     public HexGrid hexGrid { get; private set; }
     [field: SerializeField]
     public PlayerController player { get; private set; }
-
+    [field: SerializeField]
+    public HexCoord playerStartPos { get; private set; }
 
 
 
@@ -40,12 +41,10 @@ public class GameManager : MonoBehaviour
 
     }
 
-
-    public bool CanMoveTo(HexCoord coord)
+    private void Start()
     {
-        return hexGrid.isValidCoordinates(coord);
+        player.transform.position = hexGrid.GetWorldPos(playerStartPos);
     }
-
 
     public void DamageTiles(List<HexCoord> targettedTiles, int attackDamage)
     {

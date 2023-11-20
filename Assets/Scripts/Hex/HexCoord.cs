@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 [System.Serializable]
 public struct HexCoord
@@ -52,6 +53,24 @@ public struct HexCoord
 
     public static HexCoord[] VertexDirections = { (1, 1), (-1, 2), (-2, 1), (-1, -1), (1, -2), (2, -1) };//Peu utile
     public static HexCoord[] EdgeDirections = { (0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1), (1, 0) };
+
+    public static Orientation GetCorrespondingOrientation(HexCoord edgeDirection)//badly written function
+    {
+        if(!EdgeDirections.Contains(edgeDirection))
+        {
+            Debug.LogError("GetCorrespondingOrientation returned a dummy value (0)");
+            return 0;
+        }
+        else
+        {
+            for (int i = 0; i < 6; ++i)
+            {
+                if (EdgeDirections[i].Equals(edgeDirection)) return i;
+            }
+            Debug.LogError("GetCorrespondingOrientation returned a dummy value (0)");
+            return 0;
+        }
+    }
 
     public HexCoord(int q = 0, int s = 0)
     {

@@ -46,7 +46,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private bool mode_swingTakesYouWithIt = true;
 
-    private HexCoord targetGridPos;
+    public HexCoord targetGridPos { get; private set; }
 
     private HexCoord.Orientation targetOrientation;
 
@@ -175,7 +175,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="gridPos">The grid coordinates to move to</param>
     private void MoveTo(HexCoord gridPos, float customSpeed = -1f)
     {
-        if (!GameManager.Instance.CanMoveTo(targetGridPos))
+        if (!CanMoveTo(targetGridPos))
         {
             Debug.Log("You can't move there.");
             targetGridPos = playerPos;
@@ -294,7 +294,6 @@ public class PlayerController : MonoBehaviour
         currentActionInput = PlayerInputs.ActionInputs.None;
     }
 
-
     private void TargetMovement(PlayerInputs.ActionInputs instruction, bool invertedBallast = false)
     {
         switch (instruction)
@@ -326,5 +325,12 @@ public class PlayerController : MonoBehaviour
 
                 return;
         }
+    }
+
+    public bool CanMoveTo(HexCoord coord)
+    {
+        if (!GameManager.Instance.hexGrid.IsValidMoveCoordinates(coord))
+            return false;
+        return !EnemiesManager.Instance.IsAlreadyTargetted(coord);
     }
 }

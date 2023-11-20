@@ -47,7 +47,7 @@ public class DemonicArm : MonoBehaviour
     {
         isSwinging = true;
         float safetyTimer = 0f;
-        while (Vector3.Distance(transform.localPosition, targetSwingPosition) > 0.01f && safetyTimer < 10f)
+        while (Vector3.Distance(transform.localPosition, targetSwingPosition) > 0.01f && safetyTimer < 5f)
         {
             yield return null; //new WaitForFixedUpdate();
 
