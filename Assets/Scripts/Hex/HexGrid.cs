@@ -109,4 +109,22 @@ public class HexGrid : MonoBehaviour
         return output;
     }
 
+    public List<HexTile> GetAllTileNeighbours(HexTile tile)
+    {
+        List<HexTile> output = new();
+        List<HexCoord> coordNeighbours = GetAllNeighbours(tile.GridCoordinates);
+
+        foreach(HexCoord coord in coordNeighbours)
+        {
+            output.Add(tiles[coord]);
+        }
+
+        return output;
+    }
+
+    public List<HexTile> GetAllTileNeighbours(HexCoord coords)
+    {
+        return GetAllTileNeighbours(tiles[coords]);
+    }
+
 }

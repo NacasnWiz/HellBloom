@@ -22,6 +22,9 @@ public class EnemiesManager : MonoBehaviour
 
     public int nb_enemiesStart;
 
+    [SerializeField]
+    private Enemy.MoveBehaviour baseMoveBehaviour;
+
 
     private void Awake()
     {
@@ -75,26 +78,40 @@ public class EnemiesManager : MonoBehaviour
         aliveEnemies.Remove(dyingEnemy);
     }
 
-    public bool IsAlreadyTargetted(HexCoord coord, Enemy enemyAsking = null)
+    //public bool IsAlreadyTargetted(HexCoord coord, Enemy enemyAsking = null)
+    //{
+    //    foreach (Enemy enemy in aliveEnemies)
+    //    {
+    //        if (enemy != enemyAsking && enemy.isAlive)
+    //        {
+    //            if (enemy.targetMovePos == coord)
+    //            {
+    //                Debug.Log(enemyAsking.gameObject.name + " asked to move to Tile " + coord + " but it's already targetted by enemy " + enemy.gameObject.name);
+    //                return true;
+    //            }
+    //        }
+    //    }
+
+    //    if (enemyAsking == null)
+    //        return false;
+    //    else
+    //        return GameManager.Instance.player.targetGridPos == coord && GameManager.Instance.player.targetGridPos != GameManager.Instance.player.playerPos;//targetting its own pos doesn't count.
+    //}
+
+    public bool IsMovedOn(HexCoord coord, Enemy enemyAsking = null)
     {
         foreach (Enemy enemy in aliveEnemies)
         {
-            if (enemy != enemyAsking)
+            if (enemy.isMovingToPos == coord && enemy != enemyAsking && enemy.isAlive)
             {
-                if (enemy.targetMovePos == coord)
-                {
-                    //Debug.Log("Tile " + coord + " is already targetted by enemy " + enemy.gameObject.name);
-                    return true;
-                }
+                return true;
             }
         }
 
         if (enemyAsking == null)
-        {
             return false;
-        }
         else
-            return GameManager.Instance.player.targetGridPos == coord;
+            return GameManager.Instance.player.targetGridPos == coord && GameManager.Instance.player.targetGridPos != GameManager.Instance.player.playerPos;//targetting its own pos doesn't count.
     }
 
     private void SpawnEnemy(HexCoord pos)
@@ -104,7 +121,7 @@ public class EnemiesManager : MonoBehaviour
         ++nextEnemyID;
         spawnedEnemy.m_startPos = pos;
         spawnedEnemy.m_startOrientation = 0;
-        spawnedEnemy.currentMoveBehaviour = Enemy.MoveBehaviour.predatePlayerStraight;
+        spawnedEnemy.currentMoveBehaviour = baseMoveBehaviour;
 
         spawnedEnemy.gameObject.name = "Enemy" + spawnedEnemy.ID;
     }

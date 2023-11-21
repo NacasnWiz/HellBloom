@@ -12,7 +12,8 @@ public class Enemy : MonoBehaviour
     {
         Idle = 0,
         Random = 1,
-        predatePlayerStraight = 2,
+        DEPRECATEDpredatePlayerStraight = 2,
+        predatePlayerAStar = 3,
     }
 
     [SerializeField]
@@ -29,6 +30,7 @@ public class Enemy : MonoBehaviour
     public HexCoord currentPos { get; private set; }
     public HexCoord lastPos { get; private set; }
     public HexCoord targetMovePos { get; private set; }
+    public HexCoord isMovingToPos { get; private set; }
     public HexCoord.Orientation currentOrientation { get; private set; }
     public HexCoord.Orientation targetOrientation { get; private set; }
 
@@ -45,8 +47,6 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private float _rotateCooldown = 0.5f;
     private float moveTimer = 0f;
-
-
 
     public static UnityEvent<Enemy> ev_moved = new();
     public static UnityEvent<Enemy> ev_spawned = new();
@@ -66,11 +66,14 @@ public class Enemy : MonoBehaviour
         health = _maxHealth;
 
         currentPos = m_startPos;
+        isMovingToPos = m_startPos;
         currentOrientation = m_startOrientation; AdaptRotationToOrientation();
         transform.position = GameManager.Instance.hexGrid.GetWorldPos(currentPos);
         transform.position += Vector3.up * _modelHeight;
 
         ev_spawned.Invoke(this);
+
+        StartCoroutine(LookPlayerCoroutine());
     }
 
     private void OnRotateEnd()
@@ -97,8 +100,15 @@ public class Enemy : MonoBehaviour
     {
         moveTimer += Time.deltaTime;
         Move();
+    }
 
-        m_head.transform.forward = GameManager.Instance.player.transform.position - transform.position;
+    private IEnumerator LookPlayerCoroutine()
+    {
+        while(true)
+        {
+            yield return null;
+            m_head.transform.forward = GameManager.Instance.player.transform.position - transform.position;
+        }
     }
 
     private void Move()
@@ -107,8 +117,13 @@ public class Enemy : MonoBehaviour
             return;
 
         targetMovePos = ChooseTargetMovePos();
-        targetOrientation = HexCoord.GetCorrespondingOrientation(targetMovePos - currentPos);
-        Debug.Log(targetOrientation);
+        if(HexCoord.Distance(targetMovePos, currentPos) == 1)
+            targetOrientation = HexCoord.GetCorrespondingOrientation(targetMovePos - currentPos);
+        else
+        {
+            targetMovePos = currentPos;
+            return;
+        }
 
         if (!CanMoveHere(targetMovePos))
         {
@@ -116,10 +131,21 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        if (targetOrientation == currentOrientation)
-            MoveTo(targetMovePos);
-        else
+        if (targetOrientation != currentOrientation)
+        {
             RotateTo(targetOrientation);
+            return;
+        }
+
+        if (targetMovePos != GameManager.Instance.player.playerPos)
+        {
+            MoveTo(targetMovePos);
+        }
+        else
+        {
+            Debug.Log(gameObject.name + " reset targetmovePos from " + targetMovePos + "to current");
+            targetMovePos = currentPos;
+        }
     }
 
     private bool CanMove()
@@ -131,9 +157,7 @@ public class Enemy : MonoBehaviour
     {
         if (!GameManager.Instance.hexGrid.IsValidMoveCoordinates(coord))
             return false;
-        if (EnemiesManager.Instance.IsAlreadyTargetted(coord, this))
-            return false;
-        if (GameManager.Instance.player.playerPos == coord)
+        if (EnemiesManager.Instance.IsMovedOn(coord, this))
             return false;
 
         return true;
@@ -145,11 +169,26 @@ public class Enemy : MonoBehaviour
         {
             case MoveBehaviour.Random:
                 return GetRandomNeighbourPos();
-            case MoveBehaviour.predatePlayerStraight:
+            case MoveBehaviour.DEPRECATEDpredatePlayerStraight:
                 return GetClosestTileToPlayer();
+            case MoveBehaviour.predatePlayerAStar:
+                return GetNextTileToPlayer();
             default:
                 return currentPos;
         }
+    }
+
+    private HexCoord GetNextTileToPlayer() //name could be better
+    {
+        List<HexTile> path = PathFinding.FindPathAStarBi(GameManager.Instance.hexGrid.tiles[currentPos], GameManager.Instance.hexGrid.tiles[GameManager.Instance.player.playerPos], GameManager.Instance.hexGrid);
+
+        if (path.Count > 1)
+        {
+            return path[1].GridCoordinates; //path[0] is the tile at currentPos
+        }
+        Debug.Log("noooo");
+        return currentPos;
+        return GetClosestTileToPlayer();
     }
 
     private HexCoord GetRandomNeighbourPos()
@@ -166,17 +205,23 @@ public class Enemy : MonoBehaviour
 
         neighbours.Sort(delegate (HexCoord o1, HexCoord o2) { return HexCoord.Distance(o1, GameManager.Instance.player.playerPos) - HexCoord.Distance(o2, GameManager.Instance.player.playerPos); });
 
-        return neighbours[0];
+        return neighbours.FirstOrDefault(o => CanMoveHere(o));
     }
 
     private void MoveTo(HexCoord targetPos)
     {
+        if (targetMovePos == currentPos)
+            return;
+
         Vector3 targetWorldPos = GameManager.Instance.hexGrid.GetWorldPos(targetPos) + Vector3.up * _modelHeight;
         m_movements.Move(targetWorldPos);
+        isMovingToPos = targetMovePos;
     }
 
     private void RotateTo(HexCoord.Orientation targetOrientation)
     {
+        if (targetOrientation == currentOrientation) return;
+
         Quaternion targetRotation = targetOrientation.GetUnderlyingRotation() * Quaternion.Euler(0f, -30f, 0f);
         m_movements.Rotate(targetRotation);
     }

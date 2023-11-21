@@ -26,6 +26,27 @@ public class HexTile : MonoBehaviour
 
     public Enemy containedEnemy = null;
 
+    public bool isWalkable = true;
+
+    public struct PathFinding
+    {
+        public int Total => moveCost + heurCost;
+
+        public int moveCost;
+
+        public int heurCost;
+    }
+
+    public PathFinding pathValues;
+
+    public List<HexTile> neighbours { get; private set; } = new();
+
+    private void Start()
+    {
+        ActualizeNeighbours();
+        neighbours = GameManager.Instance.hexGrid.GetAllTileNeighbours(this);
+    }
+
     private void OnMouseDown()
     {
         Debug.Log(_gridCoordinates);
@@ -36,6 +57,11 @@ public class HexTile : MonoBehaviour
         if(containedEnemy == null) { return; }
 
         containedEnemy.TakeDamage(amount);
+    }
+
+    private void ActualizeNeighbours()
+    {
+        neighbours = GameManager.Instance.hexGrid.GetAllTileNeighbours(this);
     }
 
 }
