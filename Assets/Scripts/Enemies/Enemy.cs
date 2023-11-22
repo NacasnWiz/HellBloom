@@ -8,7 +8,7 @@ using System.Linq;
 [RequireComponent(typeof(Movements))]
 public class Enemy : MonoBehaviour
 {
-    public enum MoveBehaviour
+    public enum PathFindingBehabiour
     {
         Idle = 0,
         Random = 1,
@@ -16,12 +16,28 @@ public class Enemy : MonoBehaviour
         predatePlayerAStar = 3,
     }
 
+    public enum MoveBehabiour
+    {
+        Regular = 0,
+        Free = 1,
+    }
+
+    public enum AttackMode
+    {
+        Regular = 0,
+    }
+
+    [SerializeField] MeshRenderer m_Renderer;//dummy, later will be replaced by a model
+    public Material freeMoveMaterial;
+
     [SerializeField]
-    private Movements m_movements;
+    private Movements m_movements;//I could implement it another way around, because there's a heavy duplicate with Player's movement handling (fuse the two in an interface? idk)
     [SerializeField]
     private GameObject m_head;
 
-    public MoveBehaviour currentMoveBehaviour;
+    public PathFindingBehabiour currentPathFindingBehaviour;
+    public MoveBehabiour currentMoveBehabiour;
+    public AttackMode currentAttackMode;
 
     public int ID = -1;
 
@@ -43,16 +59,23 @@ public class Enemy : MonoBehaviour
 
     public int _accurateSighRange = 10;
 
+    private int attackDamage = 1;
+    [SerializeField]
+    private float _attackCooldown = 1f;
+    private float attackTimer = 0f;
 
     [SerializeField]
     private float _moveCooldown = 1f;
     [SerializeField]
     private float _rotateCooldown = 0.5f;
+    [SerializeField]
+    private float _moveAfterAttackCooldown = 0.5f;
     private float moveTimer = 0f;
 
     public static UnityEvent<Enemy> ev_moved = new();
     public static UnityEvent<Enemy> ev_spawned = new();
     public static UnityEvent<Enemy> ev_died = new();
+    public static UnityEvent<HexCoord, int> ev_attack = new();
 
 
     private void Reset()
@@ -67,20 +90,30 @@ public class Enemy : MonoBehaviour
 
         health = _maxHealth;
 
-        currentPos = m_startPos;
-        isMovingToPos = m_startPos;
-        currentOrientation = m_startOrientation; AdaptRotationToOrientation();
-        transform.position = GameManager.Instance.hexGrid.GetWorldPos(currentPos);
-        transform.position += Vector3.up * _modelHeight;
+        InitPosition();
+
+        if(currentMoveBehabiour == MoveBehabiour.Free)
+        {
+            m_Renderer.material = freeMoveMaterial;
+        }
 
         ev_spawned.Invoke(this);
 
         StartCoroutine(LookPlayerCoroutine());
     }
 
+    private void InitPosition()
+    {
+        currentPos = m_startPos;
+        isMovingToPos = m_startPos;
+        currentOrientation = m_startOrientation; AdaptRotationToOrientation();
+        transform.position = GameManager.Instance.hexGrid.GetWorldPos(currentPos);
+        transform.position += Vector3.up * _modelHeight;
+    }
+
     private void OnRotateEnd()
     {
-        Debug.Log(gameObject.name + " Done rotating");
+        //Debug.Log(gameObject.name + " Done rotating");
 
         currentOrientation = targetOrientation;
 
@@ -89,7 +122,7 @@ public class Enemy : MonoBehaviour
 
     private void OnMoveEnd()
     {
-        Debug.Log(gameObject.name + " Done moving");
+        //Debug.Log(gameObject.name + " Done moving");
 
         lastPos = currentPos;
         currentPos = targetMovePos;
@@ -101,6 +134,7 @@ public class Enemy : MonoBehaviour
     private void Update()
     {
         moveTimer += Time.deltaTime;
+        attackTimer += Time.deltaTime;
         Move();
     }
 
@@ -109,7 +143,7 @@ public class Enemy : MonoBehaviour
         while (true)
         {
             yield return null;
-            m_head.transform.forward = GameManager.Instance.player.transform.position - transform.position;
+            m_head.transform.forward = GameManager.Instance.playerController.transform.position - transform.position;
         }
     }
 
@@ -123,31 +157,51 @@ public class Enemy : MonoBehaviour
             targetOrientation = HexCoord.GetCorrespondingOrientation(targetMovePos - currentPos);
         else
         {
-            targetMovePos = currentPos;
+            Debug.Log("The next tile was not at distance 1 from me, " + gameObject.name);
+            CancelMovement();
             return;
         }
 
         if (!CanMoveHere(targetMovePos))
         {
-            targetMovePos = currentPos;
-            return;
+            CancelMovement();
         }
 
         if (targetOrientation != currentOrientation)
         {
             RotateTo(targetOrientation);
-            return;
+            if(!(currentMoveBehabiour == MoveBehabiour.Free))
+                CancelMovement();
         }
 
-        if (targetMovePos != GameManager.Instance.player.playerPos)
+        if (targetMovePos != GameManager.Instance.playerController.playerPos)
         {
             MoveTo(targetMovePos);
         }
-        else
+        else //attackPlayer here maybe
         {
-            Debug.Log(gameObject.name + " reset targetmovePos from " + targetMovePos + "to current");
-            targetMovePos = currentPos;
+            Attack(targetMovePos);
+
+            //Debug.Log(gameObject.name + " reset targetmovePos from " + targetMovePos + " to current " + currentPos);
+            CancelMovement();
         }
+    }
+
+    private void Attack(HexCoord tilePos)
+    {
+        if (attackTimer < _attackCooldown) { Debug.Log(gameObject.name + " tried to attack but it's on cooldown"); return; }
+
+        Debug.Log(gameObject.name + " attacked " +  tilePos + " for " + attackDamage + " damage!");
+        ev_attack.Invoke(tilePos, attackDamage);
+
+        attackTimer = 0f;
+        moveTimer = _moveCooldown - _moveAfterAttackCooldown;
+    }
+
+    private void CancelMovement()
+    {
+        targetMovePos = currentPos;
+        return;
     }
 
     private bool CanMove()
@@ -167,13 +221,13 @@ public class Enemy : MonoBehaviour
 
     private HexCoord ChooseTargetMovePos()
     {
-        switch (currentMoveBehaviour)
+        switch (currentPathFindingBehaviour)
         {
-            case MoveBehaviour.Random:
+            case PathFindingBehabiour.Random:
                 return GetRandomNeighbourPos();
-            case MoveBehaviour.DEPRECATEDpredatePlayerStraight:
+            case PathFindingBehabiour.DEPRECATEDpredatePlayerStraight:
                 return GetClosestTileToPlayer();
-            case MoveBehaviour.predatePlayerAStar:
+            case PathFindingBehabiour.predatePlayerAStar:
                 return GetNextTileToPlayer();
             default:
                 return currentPos;
@@ -182,13 +236,13 @@ public class Enemy : MonoBehaviour
 
     private HexCoord GetNextTileToPlayer() //name could be better
     {
-        if (HexCoord.Distance(currentPos, GameManager.Instance.player.playerPos) > _accurateSighRange)
+        if (HexCoord.Distance(currentPos, GameManager.Instance.playerController.playerPos) > _accurateSighRange)
         {
             Debug.Log("Player is too far for " + gameObject.name + " to accurately determine path");
             return GetClosestTileToPlayer();
         }
 
-        List<HexTile> path = PathFinding.FindPathAStarBi(GameManager.Instance.hexGrid.tiles[currentPos], GameManager.Instance.hexGrid.tiles[GameManager.Instance.player.playerPos], GameManager.Instance.hexGrid);
+        List<HexTile> path = PathFinding.FindPathAStarBi(GameManager.Instance.hexGrid.tiles[currentPos], GameManager.Instance.hexGrid.tiles[GameManager.Instance.playerController.playerPos], GameManager.Instance.hexGrid, _accurateSighRange);
 
         if (path.Count > 1)
         {
@@ -205,14 +259,22 @@ public class Enemy : MonoBehaviour
 
     private HexCoord GetClosestTileToPlayer()
     {
-        List<HexCoord> neighbours = GameManager.Instance.hexGrid.GetAllNeighbours(currentPos);
+        List<HexTile> neighbourTiles = GameManager.Instance.hexGrid.tiles[currentPos].neighbours;
+
+        List<HexCoord> neighbours = new();
+        foreach(HexTile tile in neighbourTiles)
+        {
+            neighbours.Add(tile.GridCoordinates);
+        }
+
+        neighbours = neighbours.Where(o => CanMoveHere(o)).ToList();
 
         if (neighbours.Count == 0)
             return currentPos;
 
-        neighbours.Sort(delegate (HexCoord o1, HexCoord o2) { return HexCoord.Distance(o1, GameManager.Instance.player.playerPos) - HexCoord.Distance(o2, GameManager.Instance.player.playerPos); });
+        neighbours.Sort(delegate (HexCoord o1, HexCoord o2) { return HexCoord.Distance(o1, GameManager.Instance.playerController.playerPos) - HexCoord.Distance(o2, GameManager.Instance.playerController.playerPos); });
 
-        return neighbours.FirstOrDefault(o => CanMoveHere(o));
+        return neighbours.FirstOrDefault();
     }
 
     private void MoveTo(HexCoord targetPos)

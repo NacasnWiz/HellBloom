@@ -150,7 +150,7 @@ using System.Net;
 
 public class PathFinding
 {
-    public static List<HexTile> FindPathAStarBi(HexTile start, HexTile goal, HexGrid hexGrid)
+    public static List<HexTile> FindPathAStarBi(HexTile start, HexTile goal, HexGrid hexGrid, float rangeLimit = Mathf.Infinity)
     {
         List<HexTile> outputPath = new();
 
@@ -190,7 +190,7 @@ public class PathFinding
 
             foreach (HexTile neighbour in currentTile.neighbours)
             {
-                if (hexGrid.IsValidMoveCoordinates(neighbour.GridCoordinates) && !searched.Contains(neighbour))
+                if (hexGrid.IsValidMoveCoordinates(neighbour.GridCoordinates) && !searched.Contains(neighbour) && HexCoord.Distance(neighbour.GridCoordinates, goal.GridCoordinates) < rangeLimit)
                 {
                     if (!toSearchFromStart.Contains(neighbour))
                     {

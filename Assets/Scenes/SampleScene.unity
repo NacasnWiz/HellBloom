@@ -166,7 +166,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 4445356470850397247, guid: 50917eefde5d50347bbaab8d74eddf4b, type: 3}
   nb_enemiesStart: 5
-  baseMoveBehaviour: 3
+  basePathFindingBehaviour: 3
+  baseMoveBehabiour: 0
   <baseAccurateSighRange>k__BackingField: 10
 --- !u!1 &110755241
 GameObject:
@@ -177,12 +178,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 110755244}
+  - component: {fileID: 110755250}
   - component: {fileID: 110755247}
   - component: {fileID: 110755245}
   - component: {fileID: 110755246}
   - component: {fileID: 110755248}
+  - component: {fileID: 110755249}
   m_Layer: 0
-  m_Name: Character
+  m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -282,6 +285,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <attackDamage>k__BackingField: 2
   currentAttackType: 1
+--- !u!114 &110755249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 110755241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59718b0f138495a4387a3c350350e172, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _maxHealth: 10
+  ev_playerDied:
+    m_PersistentCalls:
+      m_Calls: []
+  ev_playerHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &110755250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 110755241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18f31020848c5c1429f8eed0d8512334, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <controller>k__BackingField: {fileID: 110755247}
+  <character>k__BackingField: {fileID: 110755249}
 --- !u!1 &454200831
 GameObject:
   m_ObjectHideFlags: 0
@@ -1678,7 +1714,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <hexGrid>k__BackingField: {fileID: 1322921535}
-  <player>k__BackingField: {fileID: 110755247}
+  <player>k__BackingField: {fileID: 110755250}
   <playerStartPos>k__BackingField:
     _coords: {x: 0, y: 0}
 --- !u!4 &1991194735

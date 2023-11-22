@@ -23,7 +23,9 @@ public class EnemiesManager : MonoBehaviour
     public int nb_enemiesStart;
 
     [SerializeField]
-    private Enemy.MoveBehaviour baseMoveBehaviour;
+    private Enemy.PathFindingBehabiour basePathFindingBehaviour;
+    [SerializeField]
+    private Enemy.MoveBehabiour baseMoveBehabiour;
 
     [field: SerializeField]
     public int baseAccurateSighRange { get; private set; } = 10;
@@ -118,7 +120,7 @@ public class EnemiesManager : MonoBehaviour
         if (enemyAsking == null)
             return false;
         else
-            return GameManager.Instance.player.targetGridPos == coord && GameManager.Instance.player.targetGridPos != GameManager.Instance.player.playerPos;//targetting its own pos doesn't count.
+            return GameManager.Instance.playerController.targetGridPos == coord && GameManager.Instance.playerController.targetGridPos != GameManager.Instance.playerController.playerPos;//targetting its own pos doesn't count.
     }
 
     private void SpawnEnemy(HexCoord pos)
@@ -128,8 +130,9 @@ public class EnemiesManager : MonoBehaviour
         ++nextEnemyID;
         spawnedEnemy.m_startPos = pos;
         spawnedEnemy.m_startOrientation = 0;
-        spawnedEnemy.currentMoveBehaviour = baseMoveBehaviour;
+        spawnedEnemy.currentPathFindingBehaviour = basePathFindingBehaviour;
         spawnedEnemy._accurateSighRange = baseAccurateSighRange;
+        spawnedEnemy.currentMoveBehabiour = baseMoveBehabiour;
 
         spawnedEnemy.gameObject.name = "Enemy" + spawnedEnemy.ID;
     }

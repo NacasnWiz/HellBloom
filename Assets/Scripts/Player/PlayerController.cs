@@ -62,19 +62,6 @@ public class PlayerController : MonoBehaviour
     public bool isOnActionCooldown { get; private set; } = false;
     public bool isOnSwingCooldown { get; private set; } = false;
 
-
-    private void Start()
-    {
-        //movements.doneMoving.AddListener((coords) => Debug.Log(coords));
-
-        movements.doneMoving.AddListener(() => OnEndMovement(Actions.Move));
-        movements.doneRotating.AddListener(() => OnEndMovement(Actions.Rotate));
-        demonicArm.doneSwinging.AddListener(() => OnEndMovement(Actions.Swing));
-
-
-        Application.targetFrameRate = 60;
-    }
-
     private void Reset()
     {
         movements = gameObject.GetComponent<Movements>();
@@ -83,15 +70,29 @@ public class PlayerController : MonoBehaviour
         attack = gameObject.GetComponent<PlayerAttack>();
     }
 
-    private void Update()
+
+    private void Start()
     {
-        if(currentActionInput == PlayerInputs.ActionInputs.Swing || nextActionInput == PlayerInputs.ActionInputs.Swing)
+        //movements.doneMoving.AddListener((coords) => Debug.Log(coords));
+
+        movements.doneMoving.AddListener(() => OnEndMovement(Actions.Move));
+        movements.doneRotating.AddListener(() => OnEndMovement(Actions.Rotate));
+        demonicArm.doneSwinging.AddListener(() => OnEndMovement(Actions.Swing));
+    }
+
+    public void TryToSwing()
+    {
+        if (currentActionInput == PlayerInputs.ActionInputs.Swing || nextActionInput == PlayerInputs.ActionInputs.Swing)
         {
             TakeASwing();
         }
-        else if (currentActionInput != PlayerInputs.ActionInputs.None || nextActionInput != PlayerInputs.ActionInputs.None)
+    }
+
+    public void TryToAct()
+    {
+        if ((currentActionInput != PlayerInputs.ActionInputs.None || nextActionInput != PlayerInputs.ActionInputs.None) && (currentActionInput != PlayerInputs.ActionInputs.Swing && nextActionInput != PlayerInputs.ActionInputs.Swing))
         {
-            PlayerAct();
+            Act();
         }
     }
 
@@ -131,7 +132,7 @@ public class PlayerController : MonoBehaviour
         return true;
     }
 
-    private void PlayerAct()
+    private void Act()
     {
         if (!CanAct())
         {

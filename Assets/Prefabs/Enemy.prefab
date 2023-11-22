@@ -401,7 +401,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5019626985509769930}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -453,7 +453,7 @@ CapsuleCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
   m_Height: 2
@@ -486,9 +486,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e8a4e7017a2f474ba93df27661fbd27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Renderer: {fileID: 605857780877171261}
+  freeMoveMaterial: {fileID: 2100000, guid: 96a3c355be8c4ff4fb7dacdc8192f9d1, type: 2}
   m_movements: {fileID: 771141196605555020}
   m_head: {fileID: 3143978717538679561}
-  currentMoveBehaviour: 0
+  currentPathFindingBehaviour: 0
+  currentMoveBehabiour: 0
   ID: -1
   m_startPos:
     _coords: {x: 0, y: 0}
