@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System.Net;
 
 /////// <summary>
 /////// Single grid element.
@@ -151,28 +152,35 @@ public class PathFinding
 {
     public static List<HexTile> FindPathAStarBi(HexTile start, HexTile goal, HexGrid hexGrid)
     {
-        List<HexTile> toSearch = new();
+        List<HexTile> outputPath = new();
+
+        List<HexTile> toSearchFromStart = new();
         List<HexTile> searched = new();
+
+        if (!goal.neighbours.Any(o=> hexGrid.IsValidMoveCoordinates(o.GridCoordinates)))
+        {
+            return outputPath;
+        }
 
         HexTile currentTile = start;
         currentTile.pathValues.moveCost = 0;
         currentTile.pathValues.heurCost = Heuristic(currentTile, goal);
 
-        toSearch.Add(currentTile);
+        toSearchFromStart.Add(currentTile);
 
-        while (toSearch.Count > 0)
+        while (toSearchFromStart.Count > 0)
         {
-            HexTile lowestTotalCostTile = toSearch[0];
-            for (int i = 0; i < toSearch.Count; ++i)
+            HexTile lowestTotalCostTile = toSearchFromStart[0];
+            for (int i = 0; i < toSearchFromStart.Count; ++i)
             {
-                if (toSearch[i].pathValues.Total < lowestTotalCostTile.pathValues.Total)
+                if (toSearchFromStart[i].pathValues.Total < lowestTotalCostTile.pathValues.Total)
                 {
-                    lowestTotalCostTile = toSearch[i];
+                    lowestTotalCostTile = toSearchFromStart[i];
                 }
             }
             currentTile = lowestTotalCostTile;
-            
-            toSearch.Remove(currentTile);
+
+            toSearchFromStart.Remove(currentTile);
             searched.Add(currentTile);
 
             if (currentTile == goal)
@@ -180,36 +188,35 @@ public class PathFinding
                 break;
             }
 
-            foreach(HexTile neighbour in currentTile.neighbours)
+            foreach (HexTile neighbour in currentTile.neighbours)
             {
-                if(hexGrid.IsValidMoveCoordinates(neighbour.GridCoordinates) && !searched.Contains(neighbour))
+                if (hexGrid.IsValidMoveCoordinates(neighbour.GridCoordinates) && !searched.Contains(neighbour))
                 {
-                    if (!toSearch.Contains(neighbour) || )
+                    if (!toSearchFromStart.Contains(neighbour))
                     {
-                        neighbour.pathValues.moveCost = currentTile.pathValues.moveCost + Heuristic(currentTile, neighbour);
-                        neighbour.pathValues.heurCost = Heuristic(currentTile, goal);
-                        toSearch.Add(neighbour);
+                        neighbour.pathValues.moveCost = currentTile.pathValues.moveCost + 1;//Heuristic(currentTile, neighbour);
+                        neighbour.pathValues.heurCost = Heuristic(neighbour, goal);
+                        toSearchFromStart.Add(neighbour);
                     }
-                    else if(neighbour.pathValues.Total > currentTile.pathValues.moveCost + neighbour.pathValues.heurCost)
+                    else if (neighbour.pathValues.moveCost > currentTile.pathValues.moveCost + 1)//Heuristic(currentTile, neighbour))
                     {
-                        neighbour.pathValues.moveCost = currentTile.pathValues.moveCost + Heuristic(currentTile, neighbour);
+                        neighbour.pathValues.moveCost = currentTile.pathValues.moveCost + 1;//Heuristic(currentTile, neighbour);
                     }
                 }
             }
         }
 
-        List<HexTile> outputPath = new();
-
-        if(searched.Contains(goal))
+        if (searched.Contains(goal))
         {
             currentTile = goal;
-            List<HexTile> nextTileCandidates = new ();
+            List<HexTile> nextTileCandidates = new();
 
-            while (currentTile.GridCoordinates != start.GridCoordinates)
+            outputPath.Add(currentTile);
+
+            for (int i = goal.pathValues.moveCost - 1; i >= 0; --i)
             {
-                nextTileCandidates = currentTile.neighbours;
-                nextTileCandidates.Sort(delegate(HexTile o1, HexTile o2) { return o1.pathValues.moveCost - o2.pathValues.moveCost; } );
-                currentTile = nextTileCandidates.First();
+                currentTile = searched.Find(o => o.pathValues.moveCost == i && currentTile.neighbours.Contains(o));
+                outputPath.Add(currentTile);
             }
 
             outputPath.Reverse();

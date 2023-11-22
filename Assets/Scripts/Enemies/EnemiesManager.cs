@@ -25,6 +25,9 @@ public class EnemiesManager : MonoBehaviour
     [SerializeField]
     private Enemy.MoveBehaviour baseMoveBehaviour;
 
+    [field: SerializeField]
+    public int baseAccurateSighRange { get; private set; } = 10;
+
 
     private void Awake()
     {
@@ -47,6 +50,10 @@ public class EnemiesManager : MonoBehaviour
                 HexCoord targetSpawnPos = validSpawnCoordinates[Random.Range(0, validSpawnCoordinates.Count)];
                 SpawnEnemy(targetSpawnPos);
                 validSpawnCoordinates.Remove(targetSpawnPos);
+            }
+            else
+            {
+                Debug.Log("Couldn't spawn enemies, there was no valid spawn coordinates");
             }
         }
     }
@@ -122,6 +129,7 @@ public class EnemiesManager : MonoBehaviour
         spawnedEnemy.m_startPos = pos;
         spawnedEnemy.m_startOrientation = 0;
         spawnedEnemy.currentMoveBehaviour = baseMoveBehaviour;
+        spawnedEnemy._accurateSighRange = baseAccurateSighRange;
 
         spawnedEnemy.gameObject.name = "Enemy" + spawnedEnemy.ID;
     }

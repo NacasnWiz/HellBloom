@@ -166,7 +166,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 4445356470850397247, guid: 50917eefde5d50347bbaab8d74eddf4b, type: 3}
   nb_enemiesStart: 5
-  baseMoveBehaviour: 2
+  baseMoveBehaviour: 3
+  <baseAccurateSighRange>k__BackingField: 10
 --- !u!1 &110755241
 GameObject:
   m_ObjectHideFlags: 0

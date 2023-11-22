@@ -62,6 +62,7 @@ public class HexTile : MonoBehaviour
     private void ActualizeNeighbours()
     {
         neighbours = GameManager.Instance.hexGrid.GetAllTileNeighbours(this);
+        MyLib.Shuffle(neighbours);
     }
 
 }

@@ -41,6 +41,8 @@ public class Enemy : MonoBehaviour
     public int health { get; private set; }
     public bool isAlive { get; private set; } = true;
 
+    public int _accurateSighRange = 10;
+
 
     [SerializeField]
     private float _moveCooldown = 1f;
@@ -104,7 +106,7 @@ public class Enemy : MonoBehaviour
 
     private IEnumerator LookPlayerCoroutine()
     {
-        while(true)
+        while (true)
         {
             yield return null;
             m_head.transform.forward = GameManager.Instance.player.transform.position - transform.position;
@@ -117,7 +119,7 @@ public class Enemy : MonoBehaviour
             return;
 
         targetMovePos = ChooseTargetMovePos();
-        if(HexCoord.Distance(targetMovePos, currentPos) == 1)
+        if (HexCoord.Distance(targetMovePos, currentPos) == 1)
             targetOrientation = HexCoord.GetCorrespondingOrientation(targetMovePos - currentPos);
         else
         {
@@ -180,14 +182,19 @@ public class Enemy : MonoBehaviour
 
     private HexCoord GetNextTileToPlayer() //name could be better
     {
+        if (HexCoord.Distance(currentPos, GameManager.Instance.player.playerPos) > _accurateSighRange)
+        {
+            Debug.Log("Player is too far for " + gameObject.name + " to accurately determine path");
+            return GetClosestTileToPlayer();
+        }
+
         List<HexTile> path = PathFinding.FindPathAStarBi(GameManager.Instance.hexGrid.tiles[currentPos], GameManager.Instance.hexGrid.tiles[GameManager.Instance.player.playerPos], GameManager.Instance.hexGrid);
 
         if (path.Count > 1)
         {
             return path[1].GridCoordinates; //path[0] is the tile at currentPos
         }
-        Debug.Log("noooo");
-        return currentPos;
+        Debug.Log(gameObject.name + "Couldn't find a precise path to Player");
         return GetClosestTileToPlayer();
     }
 
