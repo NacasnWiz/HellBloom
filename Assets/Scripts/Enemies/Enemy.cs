@@ -62,6 +62,8 @@ public class Enemy : MonoBehaviour
     private int attackDamage = 1;
     [SerializeField]
     private float _attackCooldown = 1f;
+    [SerializeField]
+    private float _attackAfterMoveCooldown = 0.5f;
     private float attackTimer = 0f;
 
     [SerializeField]
@@ -129,6 +131,7 @@ public class Enemy : MonoBehaviour
         ev_moved.Invoke(this);
 
         moveTimer = Random.Range(-0.4f, 0.4f);
+        attackTimer = _attackCooldown - _attackAfterMoveCooldown;
     }
 
     private void Update()
@@ -158,20 +161,24 @@ public class Enemy : MonoBehaviour
         else
         {
             Debug.Log("The next tile was not at distance 1 from me, " + gameObject.name);
-            CancelMovement();
+            targetMovePos = currentPos;
             return;
         }
 
         if (!CanMoveHere(targetMovePos))
         {
-            CancelMovement();
+            targetMovePos = currentPos;
+            return;
         }
 
         if (targetOrientation != currentOrientation)
         {
             RotateTo(targetOrientation);
             if(!(currentMoveBehabiour == MoveBehabiour.Free))
-                CancelMovement();
+            {
+                targetMovePos = currentPos;
+                return;
+            }
         }
 
         if (targetMovePos != GameManager.Instance.playerController.playerPos)
@@ -183,7 +190,8 @@ public class Enemy : MonoBehaviour
             Attack(targetMovePos);
 
             //Debug.Log(gameObject.name + " reset targetmovePos from " + targetMovePos + " to current " + currentPos);
-            CancelMovement();
+            targetMovePos = currentPos;
+            return;
         }
     }
 
