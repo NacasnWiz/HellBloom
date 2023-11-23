@@ -54,6 +54,9 @@ public class DemonicArm : MonoBehaviour
             transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetSwingPosition, swingSpeed * Time.deltaTime);
             safetyTimer += Time.deltaTime;
         }
+        if (safetyTimer >= 5f)
+            Debug.LogWarning("exited via safetyTimer from demonicArm SwingCoroutine");
+
         transform.localPosition = targetSwingPosition;
         isSwinging = false;
         isOnLeft = !isOnLeft;

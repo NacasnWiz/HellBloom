@@ -186,7 +186,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="gridPos">The grid coordinates to move to</param>
     private void MoveTo(HexCoord gridPos, float customSpeed = -1f)
     {
-        if (!CanMoveTo(targetGridPos))
+        if (!CanMoveTo(gridPos))
         {
             Debug.Log("You can't move there.");
             StartCoroutine(BumpUnwalkableTileEffect(targetMoveDirection));
@@ -219,6 +219,9 @@ public class PlayerController : MonoBehaviour
             t = bumpTimer / bumpTime;
             safetyTimer += Time.deltaTime;
         }
+        if (safetyTimer >= 4f)
+            Debug.LogWarning("exited via safetyTimer from BumpUnwalkableCoroutine");
+
         playerCamera.transform.position = cameraInitialPosition;
         isBumpingUnwalkableTile = false;
     }
@@ -303,7 +306,7 @@ public class PlayerController : MonoBehaviour
 
         if (mode_doubleInputReceiveMode)
         {
-            if (nextActionInput == PlayerInputs.ActionInputs.Swing) return;
+            //if (nextActionInput == PlayerInputs.ActionInputs.Swing) return;
 
             if ((!CanAct()) && highPriority)
             {

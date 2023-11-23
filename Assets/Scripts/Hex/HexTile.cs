@@ -44,7 +44,6 @@ public class HexTile : MonoBehaviour
     private void Start()
     {
         ActualizeNeighbours();
-        neighbours = GameManager.Instance.hexGrid.GetAllTileNeighbours(this);
     }
 
     private void OnMouseDown()

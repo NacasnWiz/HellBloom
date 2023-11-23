@@ -23,7 +23,16 @@ public class HexGrid : MonoBehaviour
 
     public Dictionary<HexCoord, HexTile> tiles { get; private set; } = new();
 
+    private void Reset()
+    {
+        hexInnerRadius = hexSize * Mathf.Sqrt(3f) / 2;
+        spacingHorizontal = hexInnerRadius * 2f;
+        spacingVertical = hexSize * 3f / 2f;
 
+        rOffset = new Vector2(spacingHorizontal / 2, spacingVertical);
+
+        DestroyAllTiles();
+    }
 
     private void Awake()
     {
@@ -55,6 +64,16 @@ public class HexGrid : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void DestroyAllTiles()
+    {
+        List<HexCoord> presentTiles = tiles.Keys.ToList();
+        foreach(HexCoord tileCoord in presentTiles)
+        {
+            Destroy(tiles[tileCoord].gameObject);
+        }
+        tiles.Clear();
     }
 
     public HexTile GetTile(HexCoord hexCoord)

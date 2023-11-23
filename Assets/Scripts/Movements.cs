@@ -60,6 +60,8 @@ public class Movements : MonoBehaviour
 
             safetyTimer += Time.deltaTime;
         }
+        if (safetyTimer >= 5f)
+            Debug.LogWarning("exited via safetyTimer from " + gameObject.name +"'s RotateCoroutine");
         transform.rotation = targetRotation;
         isRotating = false;
 
@@ -91,6 +93,9 @@ public class Movements : MonoBehaviour
 
             safetyTimer += Time.deltaTime;
         }
+        if (safetyTimer >= 5f)
+            Debug.LogWarning("exited via safetyTimer from " + gameObject.name + "'s MoveCoroutine");
+
         transform.position = targetPosition;
         isMoving = false;
 

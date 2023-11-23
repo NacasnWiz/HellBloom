@@ -14,11 +14,11 @@ public class PlayerCharacter : MonoBehaviour
         {
             if (_currentHp != value)
             {
-                ev_playerHealthChanged.Invoke();
+                _currentHp = value;
+
+                ev_playerHealthChanged.Invoke(_currentHp);
             }
             else { return; }
-
-            _currentHp = value;
         }
     }
 
@@ -28,7 +28,7 @@ public class PlayerCharacter : MonoBehaviour
     public bool hasDemonInside { get; private set; } = false;
 
     public UnityEvent ev_playerDied = new();
-    public UnityEvent ev_playerHealthChanged = new();
+    public UnityEvent<int> ev_playerHealthChanged = new();
 
 
     private void Start()
