@@ -76,10 +76,12 @@ public class HexGrid : MonoBehaviour
     {
         if (!IsExistingCoordinates(coord)) return false;
 
-        if (tiles[coord].containedEnemy == null)
+        if (!tiles[coord].isWalkable) return false;
+
+        if (tiles[coord].containedLiveEnemy == null)
             return true;
         else
-            return !tiles[coord].containedEnemy.isAlive;
+            return !tiles[coord].containedLiveEnemy.isAlive;
     }
 
     public HexCoord GetRandomGridCoordinates()

@@ -70,16 +70,16 @@ public class EnemiesManager : MonoBehaviour
     {
         aliveEnemies.Add(spawnedEnemy);
 
-        GameManager.Instance.hexGrid.tiles[spawnedEnemy.currentPos].containedEnemy = spawnedEnemy;
+        GameManager.Instance.hexGrid.tiles[spawnedEnemy.currentPos].containedLiveEnemy = spawnedEnemy;
     }
 
     private void RegisterEnemyMove(Enemy enemy)
     {
-        if (GameManager.Instance.hexGrid.tiles[enemy.lastPos].containedEnemy == enemy)
+        if (GameManager.Instance.hexGrid.tiles[enemy.lastPos].containedLiveEnemy == enemy)
         {
-            GameManager.Instance.hexGrid.tiles[enemy.lastPos].containedEnemy = null;
+            GameManager.Instance.hexGrid.tiles[enemy.lastPos].containedLiveEnemy = null;
         }
-        GameManager.Instance.hexGrid.tiles[enemy.currentPos].containedEnemy = enemy;
+        GameManager.Instance.hexGrid.tiles[enemy.currentPos].containedLiveEnemy = enemy;
     }
 
     private void RegisterEnemyDied(Enemy dyingEnemy)

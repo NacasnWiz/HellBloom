@@ -57,22 +57,27 @@ public class Enemy : MonoBehaviour
     public int health { get; private set; }
     public bool isAlive { get; private set; } = true;
 
+    [SerializeField, Range(0, 20)]
     public int _accurateSighRange = 10;
 
     private int attackDamage = 1;
-    [SerializeField]
-    private float _attackCooldown = 1f;
-    [SerializeField]
-    private float _attackAfterMoveCooldown = 0.5f;
+    [SerializeField, Range(0.2f, 5f)]
+    private float _attackCooldown = 2f;
+    [SerializeField, Range(0f,3f)]
+    private float _attackAfterMoveCooldown = 1f;
+    [SerializeField, Range(0f, 3f)]
+    private float _attackAfterRotateCooldown = 0.5f;
     private float attackTimer = 0f;
 
-    [SerializeField]
+    [SerializeField, Range(0.1f, 3f)]
     private float _moveCooldown = 1f;
-    [SerializeField]
+    [SerializeField, Range(0.1f, 1.5f)]
     private float _rotateCooldown = 0.5f;
-    [SerializeField]
+    [SerializeField, Range(0f, 3f)]
     private float _moveAfterAttackCooldown = 0.5f;
     private float moveTimer = 0f;
+
+
 
     public static UnityEvent<Enemy> ev_moved = new();
     public static UnityEvent<Enemy> ev_spawned = new();
@@ -104,6 +109,11 @@ public class Enemy : MonoBehaviour
         StartCoroutine(LookPlayerCoroutine());
     }
 
+    private float CooldownNoise(float cooldown, float amplitude = 0.25f)
+    {
+        return Random.Range(- cooldown * amplitude, cooldown * amplitude);
+    }
+
     private void InitPosition()
     {
         currentPos = m_startPos;
@@ -120,6 +130,7 @@ public class Enemy : MonoBehaviour
         currentOrientation = targetOrientation;
 
         moveTimer = _moveCooldown - _rotateCooldown;
+        attackTimer = _attackCooldown - _attackAfterRotateCooldown + CooldownNoise(_attackAfterRotateCooldown);
     }
 
     private void OnMoveEnd()
@@ -130,8 +141,8 @@ public class Enemy : MonoBehaviour
         currentPos = targetMovePos;
         ev_moved.Invoke(this);
 
-        moveTimer = Random.Range(-0.4f, 0.4f);
-        attackTimer = _attackCooldown - _attackAfterMoveCooldown;
+        moveTimer = CooldownNoise(_moveCooldown);
+        attackTimer = _attackCooldown - _attackAfterMoveCooldown + CooldownNoise(_attackAfterMoveCooldown);
     }
 
     private void Update()
@@ -202,14 +213,8 @@ public class Enemy : MonoBehaviour
         Debug.Log(gameObject.name + " attacked " +  tilePos + " for " + attackDamage + " damage!");
         ev_attack.Invoke(tilePos, attackDamage);
 
-        attackTimer = 0f;
-        moveTimer = _moveCooldown - _moveAfterAttackCooldown;
-    }
-
-    private void CancelMovement()
-    {
-        targetMovePos = currentPos;
-        return;
+        attackTimer = CooldownNoise(_attackCooldown);
+        moveTimer = _moveCooldown - _moveAfterAttackCooldown + CooldownNoise(_moveAfterAttackCooldown);
     }
 
     private bool CanMove()

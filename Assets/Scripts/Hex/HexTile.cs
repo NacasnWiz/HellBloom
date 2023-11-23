@@ -24,7 +24,7 @@ public class HexTile : MonoBehaviour
         }
     }
 
-    public Enemy containedEnemy = null;
+    public Enemy containedLiveEnemy = null;
 
     public bool isWalkable = true;
 
@@ -54,9 +54,9 @@ public class HexTile : MonoBehaviour
 
     public void Damage(int amount)
     {
-        if(containedEnemy == null) { return; }
+        if(containedLiveEnemy == null) { return; }
 
-        containedEnemy.TakeDamage(amount);
+        containedLiveEnemy.TakeDamage(amount);
     }
 
     private void ActualizeNeighbours()

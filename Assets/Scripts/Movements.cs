@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -8,6 +9,11 @@ public class Movements : MonoBehaviour
     [field: SerializeField]
     public float baseTransitionSpeed { get; private set; } = 10f;
     public float currentTransitionSpeed { get; private set; }
+
+    [SerializeField]
+    private AnimationCurve movementPace;
+    [SerializeField]
+    private AnimationCurve rotatePace;
 
     [SerializeField]
     private float transitionRotationSpeed = 500f;
@@ -35,14 +41,23 @@ public class Movements : MonoBehaviour
     {
         isRotating = true;
         float safetyTimer = 0f;
-        while (Mathf.Abs(Quaternion.Angle(transform.rotation, targetRotation)) > 0.05f && safetyTimer < 10f)
+
+        float targetTotal = Quaternion.Angle(transform.rotation, targetRotation);
+        float rotated = targetTotal - Quaternion.Angle(transform.rotation, targetRotation);
+        float t = Mathf.Abs(rotated) / Mathf.Abs(targetTotal);
+
+        while (t < 0.99f && safetyTimer < 5f)
         {
             if (test_weirdAlliasedMovementMode)
                 yield return new WaitForFixedUpdate();
             else
                 yield return null; //new WaitForFixedUpdate();
 
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, transitionRotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, transitionRotationSpeed * Time.deltaTime * rotatePace.Evaluate(t));
+
+            rotated = targetTotal - Quaternion.Angle(transform.rotation, targetRotation);
+            t = Mathf.Abs(rotated) / Mathf.Abs(targetTotal);
+
             safetyTimer += Time.deltaTime;
         }
         transform.rotation = targetRotation;
@@ -58,14 +73,22 @@ public class Movements : MonoBehaviour
         isMoving = true;
         float safetyTimer = 0f;
 
-        while (Vector3.Distance(transform.position, targetPosition) > 0.01f && safetyTimer < 10f)
+        float targetTotal = Vector3.Distance(transform.position, targetPosition);
+        float travelled = targetTotal - Vector3.Distance(transform.position, targetPosition);
+        float t = travelled / targetTotal;
+
+        while (t < 0.99f && safetyTimer < 5f)
         {
             if (test_weirdAlliasedMovementMode)
                 yield return new WaitForFixedUpdate();
             else
                 yield return null; //new WaitForFixedUpdate();
 
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * currentTransitionSpeed);
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * currentTransitionSpeed * movementPace.Evaluate(t));
+
+            travelled = targetTotal - Vector3.Distance(transform.position, targetPosition);
+            t = travelled / targetTotal;
+
             safetyTimer += Time.deltaTime;
         }
         transform.position = targetPosition;

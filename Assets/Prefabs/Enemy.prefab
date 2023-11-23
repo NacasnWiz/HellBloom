@@ -484,7 +484,8 @@ MonoBehaviour:
   _modelHeight: 1
   _accurateSighRange: 10
   _attackCooldown: 1
-  _attackAfterMoveCooldown: 0.5
+  _attackAfterMoveCooldown: 0.7
+  _attackAfterRotateCooldown: 0.45
   _moveCooldown: 1
   _rotateCooldown: 0.5
   _moveAfterAttackCooldown: 0.5
@@ -501,6 +502,54 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <baseTransitionSpeed>k__BackingField: 10
+  movementPace:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  rotatePace:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   transitionRotationSpeed: 500
   test_weirdAlliasedMovementMode: 0
 --- !u!1 &6594423547202731694

@@ -21,14 +21,17 @@ public struct HexCoord
         public int Direction
         {
             get => _direction;
-            set => _direction = (6+value) % 6;
+            set => _direction = (6 + value) % 6;
         }
 
-        public Orientation (int i) { _direction = (6+i) % 6; }
+        public Orientation(int i) { _direction = (6 + i) % 6; }
 
         public static implicit operator Orientation(int i) => new Orientation(i);
         public static implicit operator int(Orientation o) => o.Direction;
         public static Orientation operator +(Orientation o, int i) => new Orientation(o.Direction + i);
+        public static Vector3 operator *(Orientation o, Vector3 v) => o.GetUnderlyingRotation() * v;
+        public static Quaternion operator *(Orientation o, Quaternion q) => o.GetUnderlyingRotation() * q;
+        public static Quaternion operator *(Quaternion q, Orientation o) => o * q;
         //public static Orientation operator -(Orientation o, int i) => new Orientation(o.Direction - i);
 
         public override string ToString()
@@ -56,7 +59,7 @@ public struct HexCoord
 
     public static Orientation GetCorrespondingOrientation(HexCoord edgeDirection)//badly written function
     {
-        if(!EdgeDirections.Contains(edgeDirection))
+        if (!EdgeDirections.Contains(edgeDirection))
         {
             Debug.LogError("GetCorrespondingOrientation returned a dummy value (0)");
             return 0;

@@ -11,6 +11,8 @@ public class PlayerController : MonoBehaviour
     //[SerializeField] PlayerInputs inputs;
     [SerializeField] PlayerAttack attack;
 
+    [SerializeField] Camera playerCamera;
+
     public enum Actions
     {
         Move = 1,
@@ -27,7 +29,7 @@ public class PlayerController : MonoBehaviour
     [field: SerializeField]
     public bool ballastLeft { get; private set; } = false;
 
-    public float moveSpeedDuringSwing => movements.baseTransitionSpeed/2f + demonicArm.swingSpeed;
+    public float moveSpeedDuringSwing => movements.baseTransitionSpeed / 2f + demonicArm.swingSpeed;
 
     public HexCoord.Orientation edgeDirectionForward => ballastLeft ? playerOrientation : playerOrientation - 1;
     public HexCoord.Orientation edgeDirectionAntiForward => !ballastLeft ? playerOrientation : playerOrientation - 1;
@@ -49,6 +51,10 @@ public class PlayerController : MonoBehaviour
     public HexCoord targetGridPos { get; private set; }
 
     private HexCoord.Orientation targetOrientation;
+    private HexCoord.Orientation targetMoveDirection;
+    [SerializeField] private float bumpTime;
+    [SerializeField] private AnimationCurve bumpEffectCurve;
+    [SerializeField, Range(0f, 0.5f)] private float bumpAmplitude;
 
     [field: SerializeField]
     public float moveEndCooldown { get; private set; } = 0.025f;
@@ -59,6 +65,8 @@ public class PlayerController : MonoBehaviour
     [field: SerializeField]
     public float swingCooldown { get; private set; } = 2f;
 
+    public bool isBumpingUnwalkableTile { get; private set; } = false;
+
     public bool isOnActionCooldown { get; private set; } = false;
     public bool isOnSwingCooldown { get; private set; } = false;
 
@@ -68,6 +76,8 @@ public class PlayerController : MonoBehaviour
         //inputs = gameObject.GetComponent<PlayerInputs>();
         demonicArm = gameObject.GetComponentInChildren<DemonicArm>();
         attack = gameObject.GetComponent<PlayerAttack>();
+
+        playerCamera = gameObject.GetComponentInChildren<Camera>();
     }
 
 
@@ -108,7 +118,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("You can't swing, it's on cooldown");
             return false;
         }
-        if (IsInMovement())
+        if (IsInMovement() || isBumpingUnwalkableTile)
         {
             Debug.Log("You can't swing while in movement.");
             return false;
@@ -124,11 +134,11 @@ public class PlayerController : MonoBehaviour
 
     private bool CanAct()
     {
-        if (IsInMovement() || isOnActionCooldown)
+        if (IsInMovement() || isOnActionCooldown || isBumpingUnwalkableTile)
         {
             return false;
         }
-        
+
         return true;
     }
 
@@ -139,12 +149,12 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if(nextActionInput != PlayerInputs.ActionInputs.None)
+        if (nextActionInput != PlayerInputs.ActionInputs.None)
         {
             TargetMovement(nextActionInput);
             nextActionInput = PlayerInputs.ActionInputs.None;
         }
-        else if(currentActionInput != PlayerInputs.ActionInputs.None)
+        else if (currentActionInput != PlayerInputs.ActionInputs.None)
         {
             TargetMovement(currentActionInput);
         }
@@ -179,12 +189,38 @@ public class PlayerController : MonoBehaviour
         if (!CanMoveTo(targetGridPos))
         {
             Debug.Log("You can't move there.");
+            StartCoroutine(BumpUnwalkableTileEffect(targetMoveDirection));
             targetGridPos = playerPos;
             currentActionInput = PlayerInputs.ActionInputs.None;
             return;
         }
         Vector3 targetMovePos = GameManager.Instance.hexGrid.GetWorldPos(gridPos);
         movements.Move(targetMovePos, customSpeed);
+    }
+
+    private IEnumerator BumpUnwalkableTileEffect(HexCoord.Orientation direction)
+    {
+        isBumpingUnwalkableTile = true;
+
+        Vector3 cameraInitialPosition = playerCamera.transform.position;
+        Vector3 bumpDirection = (direction * Quaternion.Euler(0f, -30f, 0f) * Vector3.forward).normalized;
+
+        float safetyTimer = 0f;
+        float bumpTimer = 0f;
+
+        float t = bumpTimer / bumpTime;
+
+        while (t < 1 && safetyTimer < 4f)
+        {
+            yield return null;
+            playerCamera.transform.position = cameraInitialPosition + bumpDirection * bumpEffectCurve.Evaluate(t) * bumpAmplitude;
+
+            bumpTimer += Time.deltaTime;
+            t = bumpTimer / bumpTime;
+            safetyTimer += Time.deltaTime;
+        }
+        playerCamera.transform.position = cameraInitialPosition;
+        isBumpingUnwalkableTile = false;
     }
 
     private void TakeASwing()
@@ -198,12 +234,12 @@ public class PlayerController : MonoBehaviour
         attack.Attack(this);
         ballastLeft = !ballastLeft;
 
-        if(mode_swingTakesYouWithIt)
+        if (mode_swingTakesYouWithIt)
         {
             TargetMovement(PlayerInputs.ActionInputs.Forward);
             MoveTo(targetGridPos, moveSpeedDuringSwing);
         }
-        
+
         StartCoroutine(SwingCooldownCoroutine());
         currentActionInput = PlayerInputs.ActionInputs.None;
         nextActionInput = PlayerInputs.ActionInputs.None;
@@ -281,7 +317,7 @@ public class PlayerController : MonoBehaviour
             {
                 currentActionInput = input;
             }
-            
+
         }
         else
         {
@@ -300,19 +336,27 @@ public class PlayerController : MonoBehaviour
         switch (instruction)
         {
             case PlayerInputs.ActionInputs.Forward:
-                targetGridPos = invertedBallast ? HexCoord.GetNeighbour(playerPos, edgeDirectionAntiForward) : HexCoord.GetNeighbour(playerPos, edgeDirectionForward);
+                targetMoveDirection = invertedBallast ? edgeDirectionAntiForward : edgeDirectionForward;
+                targetGridPos = HexCoord.GetNeighbour(playerPos, targetMoveDirection);
+                //targetGridPos = invertedBallast ? HexCoord.GetNeighbour(playerPos, edgeDirectionAntiForward) : HexCoord.GetNeighbour(playerPos, edgeDirectionForward);
                 break;
 
             case PlayerInputs.ActionInputs.Back:
-                targetGridPos = invertedBallast ? HexCoord.GetNeighbour(playerPos, edgeDirectionAntiBackward) : HexCoord.GetNeighbour(playerPos, edgeDirectionBackward);
+                targetMoveDirection = invertedBallast ? edgeDirectionAntiBackward : edgeDirectionBackward;
+                targetGridPos = HexCoord.GetNeighbour(playerPos, targetMoveDirection);
+                //targetGridPos = invertedBallast ? HexCoord.GetNeighbour(playerPos, edgeDirectionAntiBackward) : HexCoord.GetNeighbour(playerPos, edgeDirectionBackward);
                 break;
 
             case PlayerInputs.ActionInputs.Left:
-                targetGridPos = HexCoord.GetNeighbour(playerPos, edgeDirectionLeft);
+                targetMoveDirection = edgeDirectionLeft;
+                targetGridPos = HexCoord.GetNeighbour(playerPos, targetMoveDirection);
+                //targetGridPos = HexCoord.GetNeighbour(playerPos, edgeDirectionLeft);
                 break;
 
             case PlayerInputs.ActionInputs.Right:
-                targetGridPos = HexCoord.GetNeighbour(playerPos, edgeDirectionRight);
+                targetMoveDirection = edgeDirectionRight;
+                targetGridPos = HexCoord.GetNeighbour(playerPos, targetMoveDirection);
+                //targetGridPos = HexCoord.GetNeighbour(playerPos, edgeDirectionRight);
                 break;
 
             case PlayerInputs.ActionInputs.TurnLeft:
@@ -326,6 +370,8 @@ public class PlayerController : MonoBehaviour
 
                 return;
         }
+
+        //targetMoveDirection = HexCoord.GetCorrespondingOrientation(playerPos - targetGridPos);
     }
 
     public bool CanMoveTo(HexCoord coord)
