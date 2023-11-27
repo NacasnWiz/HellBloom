@@ -14,9 +14,22 @@ public class EnemiesManager : MonoBehaviour
         }
     }
 
+    public enum EnemyTypes
+    {
+        Regular = 0,
+        FreeMove = 1,
+    }
+
     private int nextEnemyID = 1;
 
-    public Enemy enemyPrefab;
+    [SerializeField]
+    private Enemy regularEnemyPrefab;
+    [SerializeField]
+    private Enemy freeMoveEnemyPrefab;
+
+    private Dictionary<EnemyTypes, Enemy> enemyPrefabs = new ();
+
+
     public List<Enemy> aliveEnemies { get; private set; } = new();
     public List<HexCoord> validSpawnCoordinates { get; private set; } = new();
 
@@ -24,11 +37,11 @@ public class EnemiesManager : MonoBehaviour
 
     [SerializeField]
     private Enemy.PathFindingBehabiour basePathFindingBehaviour;
-    [SerializeField]
-    private Enemy.MoveBehabiour baseMoveBehabiour;
+    //[SerializeField]
+    //private Enemy.MoveBehabiour baseMoveBehabiour;
 
-    [field: SerializeField]
-    public int baseAccurateSighRange { get; private set; } = 10;
+    //[field: SerializeField]
+    //public int baseAccurateSighRange { get; private set; } = 10;
 
 
     private void Awake()
@@ -37,10 +50,22 @@ public class EnemiesManager : MonoBehaviour
         Enemy.ev_spawned.AddListener((enemy) => RegisterEnemySpawn(enemy));
         Enemy.ev_moved.AddListener((enemy) => RegisterEnemyMove(enemy));
         Enemy.ev_died.AddListener((enemy) => RegisterEnemyDied(enemy));
+
+        SetEnemyPrefabsDictionary();
     }
 
-    // Start is called before the first frame update
+    private void SetEnemyPrefabsDictionary()
+    {
+        enemyPrefabs.Add(EnemyTypes.Regular, regularEnemyPrefab);
+        enemyPrefabs.Add(EnemyTypes.FreeMove, freeMoveEnemyPrefab);
+    }
+
     void Start()
+    {
+        SpawnStartEnemies();
+    }
+
+    private void SpawnStartEnemies()
     {
         validSpawnCoordinates = GameManager.Instance.hexGrid.GetAllGridCoordinates();
         validSpawnCoordinates.Remove(GameManager.Instance.playerStartPos);
@@ -50,7 +75,9 @@ public class EnemiesManager : MonoBehaviour
             if (validSpawnCoordinates.Count > 0)
             {
                 HexCoord targetSpawnPos = validSpawnCoordinates[Random.Range(0, validSpawnCoordinates.Count)];
-                SpawnEnemy(targetSpawnPos);
+                int rng = Random.Range(0, 2);
+                EnemyTypes type = rng == 0 ? EnemyTypes.Regular : EnemyTypes.FreeMove;
+                SpawnEnemy(type, targetSpawnPos);
                 validSpawnCoordinates.Remove(targetSpawnPos);
             }
             else
@@ -58,12 +85,6 @@ public class EnemiesManager : MonoBehaviour
                 Debug.Log("Couldn't spawn enemies, there was no valid spawn coordinates");
             }
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 
     private void RegisterEnemySpawn(Enemy spawnedEnemy)
@@ -87,27 +108,7 @@ public class EnemiesManager : MonoBehaviour
         aliveEnemies.Remove(dyingEnemy);
     }
 
-    //public bool IsAlreadyTargetted(HexCoord coord, Enemy enemyAsking = null)
-    //{
-    //    foreach (Enemy enemy in aliveEnemies)
-    //    {
-    //        if (enemy != enemyAsking && enemy.isAlive)
-    //        {
-    //            if (enemy.targetMovePos == coord)
-    //            {
-    //                Debug.Log(enemyAsking.gameObject.name + " asked to move to Tile " + coord + " but it's already targetted by enemy " + enemy.gameObject.name);
-    //                return true;
-    //            }
-    //        }
-    //    }
-
-    //    if (enemyAsking == null)
-    //        return false;
-    //    else
-    //        return GameManager.Instance.player.targetGridPos == coord && GameManager.Instance.player.targetGridPos != GameManager.Instance.player.playerPos;//targetting its own pos doesn't count.
-    //}
-
-    public bool IsMovedOn(HexCoord coord, Enemy enemyAsking = null)
+    public bool AnEnemyIsMovingToThisTile(HexCoord coord, Enemy enemyAsking = null)
     {
         foreach (Enemy enemy in aliveEnemies)
         {
@@ -123,16 +124,16 @@ public class EnemiesManager : MonoBehaviour
             return GameManager.Instance.playerController.targetGridPos == coord && GameManager.Instance.playerController.targetGridPos != GameManager.Instance.playerController.playerPos;//targetting its own pos doesn't count.
     }
 
-    private void SpawnEnemy(HexCoord pos)
+    private void SpawnEnemy(EnemyTypes type, HexCoord pos)
     {
-        Enemy spawnedEnemy = Instantiate(enemyPrefab, transform);
+        Enemy spawnedEnemy = Instantiate(enemyPrefabs[type], transform);
         spawnedEnemy.ID = nextEnemyID;
         ++nextEnemyID;
         spawnedEnemy.m_startPos = pos;
         spawnedEnemy.m_startOrientation = 0;
         spawnedEnemy.currentPathFindingBehaviour = basePathFindingBehaviour;
-        spawnedEnemy._accurateSighRange = baseAccurateSighRange;
-        spawnedEnemy.currentMoveBehabiour = baseMoveBehabiour;
+        //spawnedEnemy._accurateSighRange = baseAccurateSighRange;
+        //spawnedEnemy.currentMoveBehabiour = baseMoveBehabiour;
 
         spawnedEnemy.gameObject.name = "Enemy" + spawnedEnemy.ID;
     }

@@ -8,9 +8,11 @@ public class HexTile : MonoBehaviour
     private bool hasBeenSet = false;
     private HexCoord _gridCoordinates;
     [SerializeField]
-    public HexCoord GridCoordinates{
+    public HexCoord GridCoordinates
+    {
         get { return _gridCoordinates; }
-        set {
+        set
+        {
             if (!hasBeenSet)
             {
                 _gridCoordinates = value;
@@ -23,6 +25,9 @@ public class HexTile : MonoBehaviour
             }
         }
     }
+
+    [field: SerializeField]
+    public float modelBaseSize { get; private set; } = 0.55f;
 
     public Enemy containedLiveEnemy = null;
 
@@ -53,7 +58,7 @@ public class HexTile : MonoBehaviour
 
     public void Damage(int amount)
     {
-        if(containedLiveEnemy == null) { return; }
+        if (containedLiveEnemy == null) { return; }
 
         containedLiveEnemy.TakeDamage(amount);
     }

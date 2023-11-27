@@ -381,6 +381,6 @@ public class PlayerController : MonoBehaviour
     {
         if (!GameManager.Instance.hexGrid.IsValidMoveCoordinates(coord))
             return false;
-        return !EnemiesManager.Instance.IsMovedOn(coord);
+        return !EnemiesManager.Instance.AnEnemyIsMovingToThisTile(coord);
     }
 }

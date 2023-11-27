@@ -21,6 +21,7 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         GameManager.Instance.player.character.ev_playerHealthChanged.AddListener((health) => ActualizePlayerHealth(health));
+        ActualizePlayerHealth(GameManager.Instance.player.GetHealth());
     }
 
 

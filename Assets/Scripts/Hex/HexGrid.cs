@@ -58,7 +58,8 @@ public class HexGrid : MonoBehaviour
                     float verticalPos = r * rOffset.y;
 
                     Vector3 newTilePos = new(horizontalPos, 0f, verticalPos);
-                    HexTile newTile = Instantiate(hexTilePrefab, newTilePos, Quaternion.identity, transform);
+                    HexTile newTile = Instantiate(hexTilePrefab, newTilePos, Quaternion.Euler(0f, 30f, 0f), transform);
+                    newTile.transform.localScale = newTile.modelBaseSize * hexSize * Vector3.one;
                     newTile.GridCoordinates = new HexCoord(-q, -s);
                     tiles.Add(newTile.GridCoordinates, newTile);
                 }

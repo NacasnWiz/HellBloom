@@ -27,9 +27,6 @@ public class Enemy : MonoBehaviour
         Regular = 0,
     }
 
-    [SerializeField] MeshRenderer m_Renderer;//dummy, later will be replaced by a model
-    public Material freeMoveMaterial;
-
     [SerializeField]
     private Movements m_movements;//I could implement it another way around, because there's a heavy duplicate with Player's movement handling (fuse the two in an interface? idk)
     [SerializeField]
@@ -51,7 +48,7 @@ public class Enemy : MonoBehaviour
     public HexCoord.Orientation targetOrientation { get; private set; }
 
     [SerializeField]
-    private float _modelHeight = 1f;
+    private float _modelHeight = 1f;//this could be better encapsulated
 
     public int _maxHealth { get; private set; } = 3;
     public int health { get; private set; }
@@ -98,11 +95,6 @@ public class Enemy : MonoBehaviour
         health = _maxHealth;
 
         InitPosition();
-
-        if(currentMoveBehabiour == MoveBehabiour.Free)
-        {
-            m_Renderer.material = freeMoveMaterial;
-        }
 
         ev_spawned.Invoke(this);
 
@@ -226,7 +218,7 @@ public class Enemy : MonoBehaviour
     {
         if (!GameManager.Instance.hexGrid.IsValidMoveCoordinates(coord))
             return false;
-        if (EnemiesManager.Instance.IsMovedOn(coord, this))
+        if (EnemiesManager.Instance.AnEnemyIsMovingToThisTile(coord, this))
             return false;
 
         return true;

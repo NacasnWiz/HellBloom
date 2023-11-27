@@ -6,7 +6,7 @@ using UnityEngine.Events;
 public class PlayerCharacter : MonoBehaviour
 {
     [SerializeField] private int _maxHealth = 10;
-    private int _currentHp;
+    private int _currentHp = 100;
     public int Health
     {
         get { return _currentHp; }
