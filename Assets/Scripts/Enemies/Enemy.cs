@@ -29,8 +29,7 @@ public class Enemy : MonoBehaviour
 
     [SerializeField]
     private Movements m_movements;//I could implement it another way around, because there's a heavy duplicate with Player's movement handling (fuse the two in an interface? idk)
-    [SerializeField]
-    private GameObject m_head;
+    [SerializeField] private EnemyHead m_head;
 
     public PathFindingBehabiour currentPathFindingBehaviour;
     public MoveBehabiour currentMoveBehabiour;
@@ -202,12 +201,14 @@ public class Enemy : MonoBehaviour
     {
         if (attackTimer < _attackCooldown) { Debug.Log(gameObject.name + " tried to attack but it's on cooldown"); return; }
 
-        Debug.Log(gameObject.name + " attacked " +  tilePos + " for " + attackDamage + " damage!");
         ev_attack.Invoke(tilePos, attackDamage);
+        StartCoroutine(m_head.AttackCoroutine());
 
         attackTimer = CooldownNoise(_attackCooldown);
         moveTimer = _moveCooldown - _moveAfterAttackCooldown + CooldownNoise(_moveAfterAttackCooldown);
     }
+
+
 
     private bool CanMove()
     {
@@ -243,7 +244,7 @@ public class Enemy : MonoBehaviour
     {
         if (HexCoord.Distance(currentPos, GameManager.Instance.playerController.playerPos) > _accurateSighRange)
         {
-            Debug.Log("Player is too far for " + gameObject.name + " to accurately determine path");
+            //Debug.Log("Player is too far for " + gameObject.name + " to accurately determine path");
             return GetClosestTileToPlayer();
         }
 
@@ -303,7 +304,9 @@ public class Enemy : MonoBehaviour
     public int TakeDamage(int amount)
     {
         health -= amount;
-        Debug.Log(gameObject.name + " took " + amount + " pts of damage");
+        //Debug.Log(gameObject.name + " took " + amount + " pts of damage");
+        
+        StartCoroutine(m_head.FlickerEyesCoroutine());
 
         if (health <= 0)
         {
@@ -312,6 +315,7 @@ public class Enemy : MonoBehaviour
 
         return health;
     }
+
 
     public void Die()
     {

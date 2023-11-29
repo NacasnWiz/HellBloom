@@ -2,12 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class HexTile : MonoBehaviour
 {
     private bool hasBeenSet = false;
     private HexCoord _gridCoordinates;
-    [SerializeField]
     public HexCoord GridCoordinates
     {
         get { return _gridCoordinates; }
@@ -28,6 +28,8 @@ public class HexTile : MonoBehaviour
 
     [field: SerializeField]
     public float modelBaseSize { get; private set; } = 0.55f;
+    [SerializeField] private GameObject _model;
+    [SerializeField] private VisualEffect glowEffectPrefab;
 
     public Enemy containedLiveEnemy = null;
 
@@ -48,6 +50,11 @@ public class HexTile : MonoBehaviour
 
     private void Start()
     {
+        if (!isWalkable)
+        {
+            _model.transform.localScale += new Vector3(0f, 0f, 150f);
+        }
+
         ActualizeNeighbours();
     }
 
@@ -67,6 +74,13 @@ public class HexTile : MonoBehaviour
     {
         neighbours = GameManager.Instance.hexGrid.GetAllTileNeighbours(this);
         MyLib.Shuffle(neighbours);
+    }
+
+    public void Glow()
+    {
+        VisualEffect glowEffect = Instantiate(glowEffectPrefab, transform);
+        Destroy(glowEffect, 1f);
+
     }
 
 }

@@ -299,9 +299,12 @@ public class PlayerController : MonoBehaviour
     /// <param name="highPriority">Add to buffer?</param>
     public void ReceiveActionInput(PlayerInputs.ActionInputs input, bool highPriority = false)
     {
-        if (mode_swingTakesYouWithIt && demonicArm.isSwinging) //Take no input while swinging.
+        if(input == PlayerInputs.ActionInputs.Swing)
         {
-            return;
+            if(mode_swingTakesYouWithIt && demonicArm.isSwinging || isOnSwingCooldown)
+            {
+                return;
+            }
         }
 
         if (mode_doubleInputReceiveMode)

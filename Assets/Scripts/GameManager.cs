@@ -31,7 +31,10 @@ public class GameManager : MonoBehaviour
     public HexCoord playerStartPos { get; private set; }
 
 
+    public bool isGamePaused { get; private set; } = false;
+
     public UnityEvent ev_playerPickedUpDemon = new();
+    public UnityEvent<bool> ev_gamePaused = new();
 
 
     private void Awake()
@@ -64,6 +67,15 @@ public class GameManager : MonoBehaviour
 
     public void DamageTile(HexCoord coord, int attackDamage)
     {
-        hexGrid.GetTile(coord).Damage(attackDamage);
+        HexTile targetTile = hexGrid.GetTile(coord);
+        targetTile.Damage(attackDamage);
+        targetTile.Glow();
+    }
+
+    public void Pause()
+    {
+        isGamePaused = !isGamePaused;
+        Time.timeScale = isGamePaused ? 0f : 1f;
+        ev_gamePaused.Invoke(isGamePaused);
     }
 }

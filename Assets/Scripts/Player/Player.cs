@@ -27,6 +27,11 @@ public class Player : MonoBehaviour
                 controller.TryToSwing();
             controller.TryToAct();
         }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            GameManager.Instance.Pause();
+        }
     }
 
     public int TakeDamage(int amount)

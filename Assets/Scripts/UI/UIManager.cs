@@ -9,6 +9,8 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance
     { get { if (instance == null) Debug.LogError("UIManager is null !!!"); return instance; } }
 
+    [SerializeField] private GameObject pausePanel;
+
     [SerializeField] private TMP_Text playerHealthText;
 
 
@@ -21,9 +23,14 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         GameManager.Instance.player.character.ev_playerHealthChanged.AddListener((health) => ActualizePlayerHealth(health));
+        GameManager.Instance.ev_gamePaused.AddListener((isGamePaused) => ActualizePausePanel(isGamePaused));
         ActualizePlayerHealth(GameManager.Instance.player.GetHealth());
     }
 
+    private void ActualizePausePanel(bool isPaused)
+    {
+        pausePanel.SetActive(isPaused);
+    }
 
     private void ActualizePlayerHealth(int health)
     {

@@ -18,10 +18,20 @@ public class HexGrid : MonoBehaviour
     [field: SerializeField]
     public int gridSize { get; private set; } = 3;
 
+    [SerializeField] private int nb_unwalkableTiles = 5;
+
     [SerializeField]
     private HexTile hexTilePrefab;
 
     public Dictionary<HexCoord, HexTile> tiles { get; private set; } = new();
+
+    private List<HexCoord> unwalkableCoords = new List<HexCoord> {
+        new HexCoord(1, 1),
+        new HexCoord(2, 1),
+        new HexCoord(-3, 1),
+        new HexCoord(4, 1),
+        new HexCoord(2, -2)
+    };
 
     private void Reset()
     {
@@ -43,6 +53,20 @@ public class HexGrid : MonoBehaviour
         rOffset = new Vector2(spacingHorizontal / 2, spacingVertical);
 
         CreateTiles();
+        SetUnwalkableTiles(nb_unwalkableTiles);
+    }
+
+    private void SetUnwalkableTiles(int quantity)
+    {
+        for(int i = 0; i < quantity; ++i)
+        {
+            if(unwalkableCoords.Count < tiles.Count)
+            {
+                HexCoord randomCoord = GetRandomGridCoordinates(true);
+                unwalkableCoords.Add(randomCoord);
+                tiles[randomCoord].isWalkable = false;
+            }
+        }
     }
 
     private void CreateTiles()
@@ -104,9 +128,25 @@ public class HexGrid : MonoBehaviour
             return !tiles[coord].containedLiveEnemy.isAlive;
     }
 
-    public HexCoord GetRandomGridCoordinates()
+    public HexCoord GetRandomGridCoordinates(bool onlyWalkable = false)
     {
-        return tiles.Keys.ToArray()[Random.Range(0, tiles.Count)];
+        List<HexCoord> allCoords = tiles.Keys.ToList();
+        if (onlyWalkable)
+        {
+            List<HexCoord> walkableTilesPos = allCoords.Where(o => tiles[o].isWalkable).ToList();
+            if(walkableTilesPos.Count > 0)
+                return walkableTilesPos[Random.Range(0, walkableTilesPos.Count)];
+            else
+            {
+                Debug.LogError("There was no walkable tile.");
+                return HexCoord.zero;
+            }
+        }
+        else
+        {
+            return allCoords[Random.Range(0, allCoords.Count)];
+        }
+
     }
 
     /// <summary>
