@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class EnemiesManager : MonoBehaviour
 {
@@ -44,6 +45,9 @@ public class EnemiesManager : MonoBehaviour
     //public int baseAccurateSighRange { get; private set; } = 10;
 
 
+
+    public UnityEvent ev_allEnemiesDefeated = new();
+
     private void Awake()
     {
         _instance = this;
@@ -67,7 +71,7 @@ public class EnemiesManager : MonoBehaviour
 
     private void SpawnStartEnemies()
     {
-        validSpawnCoordinates = GameManager.Instance.hexGrid.GetAllGridCoordinates();
+        validSpawnCoordinates = GameManager.Instance.hexGrid.GetAllGridCoordinates(true);
         validSpawnCoordinates.Remove(GameManager.Instance.playerStartPos);
 
         for (int i = 0; i < nb_enemiesStart; i++)
@@ -106,6 +110,11 @@ public class EnemiesManager : MonoBehaviour
     private void RegisterEnemyDied(Enemy dyingEnemy)
     {
         aliveEnemies.Remove(dyingEnemy);
+
+        if(aliveEnemies.Count == 0)
+        {
+            ev_allEnemiesDefeated.Invoke();
+        }
     }
 
     public bool AnEnemyIsMovingToThisTile(HexCoord coord, Enemy enemyAsking = null)

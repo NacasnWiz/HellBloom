@@ -21,16 +21,23 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        if(character.isAlive)
+        if (!GameManager.Instance.isGameOver)
         {
-            if(character.hasDemonInside)
-                controller.TryToSwing();
-            controller.TryToAct();
-        }
+            if (character.isAlive)
+            {
+                if (character.hasDemonInside)
+                    controller.TryToSwing();
+                controller.TryToAct();
+            }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                GameManager.Instance.Pause();
+            }
+        }
+        else
         {
-            GameManager.Instance.Pause();
+
         }
     }
 

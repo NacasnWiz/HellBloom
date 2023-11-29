@@ -26,11 +26,7 @@ public class HexGrid : MonoBehaviour
     public Dictionary<HexCoord, HexTile> tiles { get; private set; } = new();
 
     private List<HexCoord> unwalkableCoords = new List<HexCoord> {
-        new HexCoord(1, 1),
-        new HexCoord(2, 1),
-        new HexCoord(-3, 1),
-        new HexCoord(4, 1),
-        new HexCoord(2, -2)
+
     };
 
     private void Reset()
@@ -128,10 +124,10 @@ public class HexGrid : MonoBehaviour
             return !tiles[coord].containedLiveEnemy.isAlive;
     }
 
-    public HexCoord GetRandomGridCoordinates(bool onlyWalkable = false)
+    public HexCoord GetRandomGridCoordinates(bool walkableOnly = false)
     {
         List<HexCoord> allCoords = tiles.Keys.ToList();
-        if (onlyWalkable)
+        if (walkableOnly)
         {
             List<HexCoord> walkableTilesPos = allCoords.Where(o => tiles[o].isWalkable).ToList();
             if(walkableTilesPos.Count > 0)
@@ -153,12 +149,19 @@ public class HexGrid : MonoBehaviour
     /// Provides a copy of gridCoordinates, as a list
     /// </summary>
     /// <returns></returns>
-    public List<HexCoord> GetAllGridCoordinates()
+    public List<HexCoord> GetAllGridCoordinates(bool walkableOnly = false)
     {
-        return new(tiles.Keys.ToList());//because HexCoord are value type
+        if (walkableOnly)
+        {
+            return new(tiles.Keys.ToList().Where(o => tiles[o].isWalkable));
+        }
+        else
+        {
+            return new(tiles.Keys.ToList());//because HexCoord are value type
+        }
     }
 
-    public List<HexCoord> GetAllNeighbours(HexCoord pos)
+    public List<HexCoord> GetAllNeighbours(HexCoord pos, bool walkableOnly = false)
     {
         List<HexCoord> output = new();
         for(int i = 0; i < 6; ++i)
@@ -168,13 +171,17 @@ public class HexGrid : MonoBehaviour
                 output.Add(HexCoord.GetNeighbour(pos, i));
             }
         }
-        return output;
+
+        if(walkableOnly)
+            return output.Where(o => tiles[o].isWalkable).ToList();
+        else
+            return output;
     }
 
-    public List<HexTile> GetAllTileNeighbours(HexTile tile)
+    public List<HexTile> GetAllTileNeighbours(HexTile tile, bool walkableOnly = false)
     {
         List<HexTile> output = new();
-        List<HexCoord> coordNeighbours = GetAllNeighbours(tile.GridCoordinates);
+        List<HexCoord> coordNeighbours = GetAllNeighbours(tile.GridCoordinates, walkableOnly);
 
         foreach(HexCoord coord in coordNeighbours)
         {
@@ -184,9 +191,9 @@ public class HexGrid : MonoBehaviour
         return output;
     }
 
-    public List<HexTile> GetAllTileNeighbours(HexCoord coords)
+    public List<HexTile> GetAllTileNeighbours(HexCoord coord, bool walkableOnly = false)
     {
-        return GetAllTileNeighbours(tiles[coords]);
+        return GetAllTileNeighbours(tiles[coord], walkableOnly);
     }
 
 }

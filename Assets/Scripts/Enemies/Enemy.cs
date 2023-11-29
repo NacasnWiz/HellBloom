@@ -138,9 +138,16 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
-        moveTimer += Time.deltaTime;
-        attackTimer += Time.deltaTime;
-        Move();
+        if (!GameManager.Instance.isGameOver)
+        {
+            moveTimer += Time.deltaTime;
+            attackTimer += Time.deltaTime;
+            Move();
+        }
+        else
+        {
+
+        }
     }
 
     private IEnumerator LookPlayerCoroutine()

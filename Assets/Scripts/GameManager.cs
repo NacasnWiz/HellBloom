@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
 
     }
 
+    public bool isGameOver { get; private set; } = false;
+
     [field: SerializeField]
     public HexGrid hexGrid { get; private set; }
     [field: SerializeField]
@@ -35,6 +37,7 @@ public class GameManager : MonoBehaviour
 
     public UnityEvent ev_playerPickedUpDemon = new();
     public UnityEvent<bool> ev_gamePaused = new();
+    public UnityEvent ev_gameOver = new();
 
 
     private void Awake()
@@ -53,6 +56,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        player.character.ev_playerDied.AddListener(() => GameOver());
+
         player.transform.position = hexGrid.GetWorldPos(playerStartPos);
         ev_playerPickedUpDemon.Invoke();
     }
@@ -77,5 +82,16 @@ public class GameManager : MonoBehaviour
         isGamePaused = !isGamePaused;
         Time.timeScale = isGamePaused ? 0f : 1f;
         ev_gamePaused.Invoke(isGamePaused);
+    }
+
+    private void GameOver()
+    {
+        ev_gameOver.Invoke();
+        isGameOver = true;
+    }
+
+    public void RestartGame()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("SampleScene");
     }
 }
