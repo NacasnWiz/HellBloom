@@ -1,0 +1,6 @@
+- Different static Levels, increasing in difficulty (currently I only have an endless reasonably difficult)
+- Sounds
+- Dynamic levels, with spawning enemies
+- Story mode ?
+- Items and power-ups ?
+- Differend kinds of enemies ?
