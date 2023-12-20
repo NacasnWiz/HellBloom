@@ -1,6 +1,24 @@
-- Different static Levels, increasing in difficulty (currently I only have an endless reasonably difficult)
+Immediate:
+- More than ZQSD, maybe PlayerPrefs as well //ok but no playerPrefs yet (for the Settings from mainMenu)
+- Enemies occupy the tile they move to while moving instead of the old one until end of movement (as currently)
+
+
+Moderate:
+- Main Menu
+- Different static random Levels, increasing in difficulty (currently I only have one reasonably difficult)
 - Sounds
 - Dynamic levels, with spawning enemies
 - Story mode ?
 - Items and power-ups ?
 - Differend kinds of enemies ?
+
+
+Hard:
+- Level Editor
+
+Features Fix:
+- Reset Inputs when pause/unpause (and not take any when paused)
+- 
+
+Post-Poning Features That Would Be Really Nice To Have:
+- Instead of a rather ugly BigBall(r), a werewolf-type arm

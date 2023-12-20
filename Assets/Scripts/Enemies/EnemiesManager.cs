@@ -35,6 +35,7 @@ public class EnemiesManager : MonoBehaviour
     public List<HexCoord> validSpawnCoordinates { get; private set; } = new();
 
     public int nb_enemiesStart;
+    [field: SerializeField] public bool registerPosOnMoveEnd { get; private set; } = false;
 
     [SerializeField]
     private Enemy.PathFindingBehabiour basePathFindingBehaviour;
@@ -51,11 +52,23 @@ public class EnemiesManager : MonoBehaviour
     private void Awake()
     {
         _instance = this;
-        Enemy.ev_spawned.AddListener((enemy) => RegisterEnemySpawn(enemy));
-        Enemy.ev_moved.AddListener((enemy) => RegisterEnemyMove(enemy));
-        Enemy.ev_died.AddListener((enemy) => RegisterEnemyDied(enemy));
+        AddListenersToEnemyEvents();
 
         SetEnemyPrefabsDictionary();
+    }
+
+    private void AddListenersToEnemyEvents()
+    {
+        Enemy.ev_spawned.AddListener((enemy) => RegisterEnemySpawn(enemy));
+        if (registerPosOnMoveEnd)
+        {
+            Enemy.ev_finishedMove.AddListener((enemy) => RegisterEnemyMove(enemy));
+        }
+        else
+        {
+            Enemy.ev_startedMove.AddListener((enemy) => RegisterEnemyMove(enemy));
+        }
+        Enemy.ev_died.AddListener((enemy) => RegisterEnemyDied(enemy));
     }
 
     private void SetEnemyPrefabsDictionary()

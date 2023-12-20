@@ -603,6 +603,13 @@ MonoBehaviour:
   turnLeft: 113
   turnRight: 101
   swing: 32
+  alt_forward: 264
+  alt_back: 261
+  alt_left: 260
+  alt_right: 262
+  alt_turnLeft: 263
+  alt_turnRight: 265
+  alt_swing: 256
 --- !u!114 &110755247
 MonoBehaviour:
   m_ObjectHideFlags: 0

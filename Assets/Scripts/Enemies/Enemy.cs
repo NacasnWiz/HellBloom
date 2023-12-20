@@ -74,11 +74,11 @@ public class Enemy : MonoBehaviour
     private float moveTimer = 0f;
 
 
-
-    public static UnityEvent<Enemy> ev_moved = new();
-    public static UnityEvent<Enemy> ev_spawned = new();
-    public static UnityEvent<Enemy> ev_died = new();
-    public static UnityEvent<HexCoord, int> ev_attack = new();
+    public static UnityEvent<Enemy> ev_startedMove { get; private set; } = new();
+    public static UnityEvent<Enemy> ev_finishedMove {get; private set;} = new();
+    public static UnityEvent<Enemy> ev_spawned {get; private set;} = new();
+    public static UnityEvent<Enemy> ev_died {get; private set;} = new();
+    public static UnityEvent<HexCoord, int> ev_attack {get; private set;} = new();
 
 
     private void Reset()
@@ -128,12 +128,19 @@ public class Enemy : MonoBehaviour
     {
         //Debug.Log(gameObject.name + " Done moving");
 
-        lastPos = currentPos;
-        currentPos = targetMovePos;
-        ev_moved.Invoke(this);
+        if(EnemiesManager.Instance.registerPosOnMoveEnd)
+            RegisterMovedPos();
+
+        ev_finishedMove.Invoke(this);
 
         moveTimer = CooldownNoise(_moveCooldown);
         attackTimer = _attackCooldown - _attackAfterMoveCooldown + CooldownNoise(_attackAfterMoveCooldown);
+    }
+
+    private void RegisterMovedPos()
+    {
+        lastPos = currentPos;
+        currentPos = targetMovePos;
     }
 
     private void Update()
@@ -202,6 +209,11 @@ public class Enemy : MonoBehaviour
             targetMovePos = currentPos;
             return;
         }
+
+        if(!EnemiesManager.Instance.registerPosOnMoveEnd)//move is registered on start if not on end
+            RegisterMovedPos();
+
+        ev_startedMove.Invoke(this);
     }
 
     private void Attack(HexCoord tilePos)
@@ -313,12 +325,14 @@ public class Enemy : MonoBehaviour
         health -= amount;
         //Debug.Log(gameObject.name + " took " + amount + " pts of damage");
         
-        StartCoroutine(m_head.FlickerEyesCoroutine());
 
         if (health <= 0)
         {
             Die();
+            return health;
         }
+
+        StartCoroutine(m_head.FlickerEyesCoroutine());
 
         return health;
     }
