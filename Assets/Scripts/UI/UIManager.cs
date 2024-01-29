@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using TMPro;
 
 public class UIManager : MonoBehaviour
@@ -17,6 +18,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text playerHealthText;
 
 
+    public UnityEvent nextLevelCountdownOver = new();
+
 
     private void Awake()
     {
@@ -25,11 +28,11 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.player.character.ev_playerHealthChanged.AddListener((health) => ActualizePlayerHealth(health));
+        GameManager.Instance.player1.character.ev_playerHealthChanged.AddListener((health) => ActualizePlayerHealth(health));
         GameManager.Instance.ev_gamePaused.AddListener((isGamePaused) => ActualizePausePanel(isGamePaused));
         GameManager.Instance.ev_gameOver.AddListener(() => ShowGameOverPanel());
         EnemiesManager.Instance.ev_allEnemiesDefeated.AddListener(() => ShowCongratulationsPanel());
-        ActualizePlayerHealth(GameManager.Instance.player.GetHealth());
+        ActualizePlayerHealth(GameManager.Instance.player1.GetHealth());
     }
 
     private void ActualizePausePanel(bool isPaused)
@@ -57,18 +60,18 @@ public class UIManager : MonoBehaviour
     private IEnumerator NextGameCoroutine()
     {
         int timeLeft = 10;
-        nextGameTimerCountdown.text = "Congratulations! All enemies are defeated!\r\nRestarting in " + timeLeft.ToString() + "...";
+        nextGameTimerCountdown.text = "Congratulations! All enemies are defeated!\r\nTo next level in " + timeLeft.ToString() + "...";
 
         while (timeLeft > 0)
         {
             yield return new WaitForSeconds(1f);
             --timeLeft;
-            nextGameTimerCountdown.text = "Congratulations! All enemies are defeated!\r\nRestarting in " + timeLeft.ToString() + "...";
+            nextGameTimerCountdown.text = "Congratulations! All enemies are defeated!\r\nTo next level in " + timeLeft.ToString() + "...";
         }
 
         nextGameTimerCountdown.text = "Restarting...";
         yield return new WaitForSeconds(1.5f);
-        
-        GameManager.Instance.RestartGame();
+
+        nextLevelCountdownOver.Invoke();
     }
 }

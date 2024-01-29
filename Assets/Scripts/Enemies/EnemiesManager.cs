@@ -15,7 +15,7 @@ public class EnemiesManager : MonoBehaviour
         }
     }
 
-    public enum EnemyTypes
+    public enum EnemyType
     {
         Regular = 0,
         FreeMove = 1,
@@ -28,13 +28,13 @@ public class EnemiesManager : MonoBehaviour
     [SerializeField]
     private Enemy freeMoveEnemyPrefab;
 
-    private Dictionary<EnemyTypes, Enemy> enemyPrefabs = new ();
+    private Dictionary<EnemyType, Enemy> enemyPrefabs = new ();
 
 
     public List<Enemy> aliveEnemies { get; private set; } = new();
     public List<HexCoord> validSpawnCoordinates { get; private set; } = new();
 
-    public int nb_enemiesStart;
+    public List<int> nb_enemiesStart;
     [field: SerializeField] public bool registerPosOnMoveEnd { get; private set; } = false;
 
     [SerializeField]
@@ -73,8 +73,8 @@ public class EnemiesManager : MonoBehaviour
 
     private void SetEnemyPrefabsDictionary()
     {
-        enemyPrefabs.Add(EnemyTypes.Regular, regularEnemyPrefab);
-        enemyPrefabs.Add(EnemyTypes.FreeMove, freeMoveEnemyPrefab);
+        enemyPrefabs.Add(EnemyType.Regular, regularEnemyPrefab);
+        enemyPrefabs.Add(EnemyType.FreeMove, freeMoveEnemyPrefab);
     }
 
     void Start()
@@ -87,19 +87,21 @@ public class EnemiesManager : MonoBehaviour
         validSpawnCoordinates = GameManager.Instance.hexGrid.GetAllGridCoordinates(true);
         validSpawnCoordinates.Remove(GameManager.Instance.playerStartPos);
 
-        for (int i = 0; i < nb_enemiesStart; i++)
+        for(int k = 0; k < nb_enemiesStart.Count; ++k)
         {
-            if (validSpawnCoordinates.Count > 0)
+            for (int i = 0; i < nb_enemiesStart[k]; i++)
             {
-                HexCoord targetSpawnPos = validSpawnCoordinates[Random.Range(0, validSpawnCoordinates.Count)];
-                int rng = Random.Range(0, 2);
-                EnemyTypes type = rng == 0 ? EnemyTypes.Regular : EnemyTypes.FreeMove;
-                SpawnEnemy(type, targetSpawnPos);
-                validSpawnCoordinates.Remove(targetSpawnPos);
-            }
-            else
-            {
-                Debug.Log("Couldn't spawn enemies, there was no valid spawn coordinates");
+                if (validSpawnCoordinates.Count > 0)
+                {
+                    HexCoord targetSpawnPos = validSpawnCoordinates[Random.Range(0, validSpawnCoordinates.Count)];
+                    EnemyType type = (EnemyType)k;
+                    SpawnEnemy(type, targetSpawnPos);
+                    validSpawnCoordinates.Remove(targetSpawnPos);
+                }
+                else
+                {
+                    Debug.Log("Couldn't spawn enemies, there was no valid spawn coordinates");
+                }
             }
         }
     }
@@ -146,7 +148,7 @@ public class EnemiesManager : MonoBehaviour
             return GameManager.Instance.playerController.targetGridPos == coord && GameManager.Instance.playerController.targetGridPos != GameManager.Instance.playerController.playerPos;//targetting its own pos doesn't count.
     }
 
-    private void SpawnEnemy(EnemyTypes type, HexCoord pos)
+    private void SpawnEnemy(EnemyType type, HexCoord pos)
     {
         Enemy spawnedEnemy = Instantiate(enemyPrefabs[type], transform);
         spawnedEnemy.ID = nextEnemyID;

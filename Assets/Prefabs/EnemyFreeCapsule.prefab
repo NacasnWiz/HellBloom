@@ -514,7 +514,7 @@ MonoBehaviour:
   _attackCooldown: 2
   _attackAfterMoveCooldown: 1.32
   _attackAfterRotateCooldown: 0.8
-  _moveCooldown: 0.1
+  _moveCooldown: 0.3
   _rotateCooldown: 0.5
   _moveAfterAttackCooldown: 0.5
 --- !u!114 &771141196605555020

@@ -25,15 +25,18 @@ public class GameManager : MonoBehaviour
     [field: SerializeField]
     public HexGrid hexGrid { get; private set; }
     [field: SerializeField]
-    public Player player { get; private set; }
+    public Player player1 { get; private set; }
 
-    public PlayerController playerController => player.controller;
+    public PlayerController playerController => player1.controller;
 
     [field: SerializeField]
     public HexCoord playerStartPos { get; private set; }
 
 
     public bool isGamePaused { get; private set; } = false;
+
+    [field: SerializeField]
+    public int currentLevel { get; private set; } = 1;
 
     public UnityEvent ev_playerPickedUpDemon = new();
     public UnityEvent<bool> ev_gamePaused = new();
@@ -56,10 +59,17 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        player.character.ev_playerDied.AddListener(() => GameOver());
+        player1.character.ev_playerDied.AddListener(() => GameOver());
 
-        player.transform.position = hexGrid.GetWorldPos(playerStartPos);
+        player1.transform.position = hexGrid.GetWorldPos(playerStartPos);
         ev_playerPickedUpDemon.Invoke();
+
+        UIManager.Instance.nextLevelCountdownOver.AddListener(() => LaunchNextLevel());
+    }
+
+    private void LaunchNextLevel()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Level " + ++currentLevel);
     }
 
     public void DamageTiles(List<HexCoord> targettedTiles, int attackDamage)

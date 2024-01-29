@@ -8,6 +8,8 @@ public class Player : MonoBehaviour
     [field: SerializeField] public PlayerController controller { get; private set; }
     [field: SerializeField] public PlayerCharacter character { get; private set; }
 
+    [field: SerializeField] public int ID { get; private set; }
+
     private void Reset()
     {
         controller = gameObject.GetComponent<PlayerController>();

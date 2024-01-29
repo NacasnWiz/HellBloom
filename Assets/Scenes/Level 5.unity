@@ -356,12 +356,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 44373281}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1991194735}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &44373283
 MonoBehaviour:
@@ -377,7 +377,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   regularEnemyPrefab: {fileID: 4445356470850397247, guid: c827e0c82df44b944a75ed5d24f85f3a, type: 3}
   freeMoveEnemyPrefab: {fileID: 4445356470850397247, guid: f63ab9133afec09419a6ff867273cd7b, type: 3}
-  nb_enemiesStart: 0500000005000000
+  nb_enemiesStart: 140000000a000000
   <registerPosOnMoveEnd>k__BackingField: 0
   basePathFindingBehaviour: 3
   ev_allEnemiesDefeated:
@@ -1063,6 +1063,9 @@ MonoBehaviour:
   congratulationsPanel: {fileID: 1622093588}
   nextGameTimerCountdown: {fileID: 1543987086}
   playerHealthText: {fileID: 7245440}
+  nextLevelCountdownOver:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &467154543
 Transform:
   m_ObjectHideFlags: 0
@@ -2215,8 +2218,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <hexSize>k__BackingField: 2
-  <gridSize>k__BackingField: 6
-  nb_unwalkableTiles: 8
+  <gridSize>k__BackingField: 12
+  nb_unwalkableTiles: 20
   hexTilePrefab: {fileID: 633990654955030931, guid: b387d8e37f110a54091f3f02ae422156, type: 3}
 --- !u!1 &1450257535
 GameObject:
@@ -3052,8 +3055,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.5, y: 1, z: 1.5}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 3.15, y: 2.1000001, z: 3.15}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 895861854}
   - {fileID: 718386422}
@@ -3609,6 +3612,7 @@ MonoBehaviour:
   <player1>k__BackingField: {fileID: 110755250}
   <playerStartPos>k__BackingField:
     _coords: {x: 0, y: 0}
+  <currentLevel>k__BackingField: 5
   ev_playerPickedUpDemon:
     m_PersistentCalls:
       m_Calls: []
@@ -3630,8 +3634,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 44373282}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
@@ -3639,6 +3642,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 705507995}
+  - {fileID: 44373282}
   - {fileID: 1991194735}
   - {fileID: 467154543}
   - {fileID: 110755244}
